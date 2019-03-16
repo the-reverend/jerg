@@ -1,0 +1,55 @@
+{
+  "name": "jerg",
+  "description": "jira report generator / aggregator",
+  "version": "0.0.0",
+  "author": "the-reverend @the-reverend",
+  "bin": {
+    "jerg": "./bin/run"
+  },
+  "bugs": "https://github.com/the-reverend/jerg/issues",
+  "dependencies": {
+    "@oclif/command": "^1.5.12",
+    "@oclif/config": "^1.12.10",
+    "@oclif/plugin-help": "^2.1.6"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1.21.3",
+    "@oclif/test": "^1.2.4",
+    "chai": "^4.2.0",
+    "eslint": "^5.15.2",
+    "eslint-config-oclif": "^3.1.0",
+    "globby": "^8.0.2",
+    "mocha": "^5.2.0",
+    "nyc": "^13.3.0"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json",
+    "/src"
+  ],
+  "homepage": "https://github.com/the-reverend/jerg",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "oclif": {
+    "commands": "./src/commands",
+    "bin": "jerg",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": "the-reverend/jerg",
+  "scripts": {
+    "postpack": "rm -f oclif.manifest.json",
+    "posttest": "eslint .",
+    "prepack": "oclif-dev manifest && oclif-dev readme",
+    "test": "nyc mocha --forbid-only \"test/**/*.test.js\"",
+    "version": "oclif-dev readme && git add README.md"
+  }
+}
