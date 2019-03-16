@@ -3,10 +3,10 @@
 jira report generator / aggregator
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/jerg.svg)](https://npmjs.org/package/jerg)
 [![Codecov](https://codecov.io/gh/the-reverend/jerg/branch/master/graph/badge.svg)](https://codecov.io/gh/the-reverend/jerg)
-[![Downloads/week](https://img.shields.io/npm/dw/jerg.svg)](https://npmjs.org/package/jerg)
-[![License](https://img.shields.io/npm/l/jerg.svg)](https://github.com/the-reverend/jerg/blob/master/package.json)
+[![License](https://img.shields.io/github/license/the-reverend/jerg.svg)](https://github.com/the-reverend/jerg/blob/master/package.json)
+<!--[![Version](https://img.shields.io/npm/v/jerg.svg)](https://npmjs.org/package/jerg)-->
+<!--[![Downloads/week](https://img.shields.io/npm/dw/jerg.svg)](https://npmjs.org/package/jerg)-->
 
 <!-- toc -->
 * [Usage](#usage)
