@@ -9,6 +9,7 @@ jira report generator / aggregator
 <!--[![Downloads/week](https://img.shields.io/npm/dw/jerg.svg)](https://npmjs.org/package/jerg)-->
 
 <!-- toc -->
+* [jerg](#jerg)
 * [Usage](#usage)
 * [Commands](#commands)
 <!-- tocstop -->
@@ -28,8 +29,27 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
+* [`jerg fields`](#jerg-fields)
 * [`jerg hello`](#jerg-hello)
 * [`jerg help [COMMAND]`](#jerg-help-command)
+
+## `jerg fields`
+
+Describe the command here
+
+```
+USAGE
+  $ jerg fields
+
+OPTIONS
+  -n, --name=name  name to print
+
+DESCRIPTION
+  ...
+  Extra documentation goes here
+```
+
+_See code: [src/commands/fields.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/fields.js)_
 
 ## `jerg hello`
 

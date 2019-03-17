@@ -1,3 +1,9 @@
 {
-  "extends": "oclif"
+  "extends": "oclif",
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "no-console": 1
+  }
 }

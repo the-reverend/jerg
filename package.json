@@ -10,7 +10,11 @@
   "dependencies": {
     "@oclif/command": "^1.5.12",
     "@oclif/config": "^1.12.10",
-    "@oclif/plugin-help": "^2.1.6"
+    "@oclif/plugin-help": "^2.1.6",
+    "config": "^3.0.1",
+    "lodash": "^4.17.11",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.21.3",
@@ -20,7 +24,8 @@
     "eslint-config-oclif": "^3.1.0",
     "globby": "^8.0.2",
     "mocha": "^5.2.0",
-    "nyc": "^13.3.0"
+    "nyc": "^13.3.0",
+    "oclif": "^1.12.10"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -46,6 +51,7 @@
   },
   "repository": "the-reverend/jerg",
   "scripts": {
+    "lint": "eslint .",
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint .",
     "prepack": "oclif-dev manifest && oclif-dev readme",
