@@ -20,7 +20,7 @@ $ npm install -g jerg
 $ jerg COMMAND
 running command...
 $ jerg (-v|--version|version)
-jerg/0.0.0 linux-x64 node-v10.15.3
+jerg/0.0.0 darwin-x64 node-v11.11.0
 $ jerg --help [COMMAND]
 USAGE
   $ jerg COMMAND
@@ -32,6 +32,7 @@ USAGE
 * [`jerg fields`](#jerg-fields)
 * [`jerg hello`](#jerg-hello)
 * [`jerg help [COMMAND]`](#jerg-help-command)
+* [`jerg tickets`](#jerg-tickets)
 
 ## `jerg fields`
 
@@ -85,4 +86,22 @@ OPTIONS
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.1.6/src/commands/help.ts)_
+
+## `jerg tickets`
+
+Describe the command here
+
+```
+USAGE
+  $ jerg tickets
+
+OPTIONS
+  -n, --name=name  name to print
+
+DESCRIPTION
+  ...
+  Extra documentation goes here
+```
+
+_See code: [src/commands/tickets.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/tickets.js)_
 <!-- commandsstop -->
