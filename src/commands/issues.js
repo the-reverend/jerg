@@ -29,6 +29,7 @@ const fieldList = [
   'customfield_13306', // Dev Team
   'duedate',
   'issuetype',
+  'labels',
   'lastViewed',
   'priority',
   'project',
@@ -76,6 +77,7 @@ function storeIssues(db, issues, insert) {
       i.fields.assignee ? i.fields.assignee.key : null,
       i.fields.creator ? i.fields.creator.key : null,
       i.fields.reporter ? i.fields.reporter.key : null,
+      i.fields.labels.join(),
       i.fields.status.id,
       i.fields.customfield_10002, // Story Points
       /*
@@ -155,6 +157,7 @@ function fetchIssues(db) {
     'issueAssignee text',
     'issueCreator text',
     'issueReporter text',
+    'issueLabels text',
     'issueStatus_ integer',
     'issueStoryPoints integer',
     'issueType text',
@@ -167,7 +170,7 @@ function fetchIssues(db) {
   const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
   const lastUpdated = moment(rows.length > 0 ? rows[0].issueLastUpdatedStamp : '1970-01-01T00:00:00.000Z').format('YYYY-MM-DD HH:mm')
   console.log(`lastUpdated : ${lastUpdated}`)
-  const insert = db.prepare('insert or replace into issues values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+  const insert = db.prepare('insert or replace into issues values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
   let options = {
     uri: '/search',
     qs: {
@@ -194,7 +197,7 @@ function fetchIssues(db) {
   })
   .then(all => {
     all.forEach(res => {
-      console.log(res.issues.length)
+      console.log(`issues updated: ${res.issues.length}`)
       storeIssues(db, res.issues, insert)
     })
   })
