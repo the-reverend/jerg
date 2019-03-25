@@ -152,9 +152,9 @@ function fetchIssues(db) {
     'issueResolutionStamp text',
     'issueUpdatedStamp text',
     'issueDueDate date',
-    'issueAssignee_ integer',
-    'issueCreator_ integer',
-    'issueReporter_ integer',
+    'issueAssignee text',
+    'issueCreator text',
+    'issueReporter text',
     'issueStatus_ integer',
     'issueStoryPoints integer',
     'issueType text',
@@ -162,10 +162,11 @@ function fetchIssues(db) {
     'issueProject text',
     'issueResolution text',
     'issueDevTeam text);'].join(', ')).run()
+  db.prepare('create unique index if not exists issues1 on issues (issue_);').run()
+  db.prepare('create unique index if not exists issues2 on issues (issueUpdatedStamp);').run()
   const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
   const lastUpdated = moment(rows.length > 0 ? rows[0].issueLastUpdatedStamp : '1970-01-01T00:00:00.000Z').format('YYYY-MM-DD HH:mm')
   console.log(`lastUpdated : ${lastUpdated}`)
-  db.prepare('create unique index if not exists issues1 on issues (issue_);').run()
   const insert = db.prepare('insert or replace into issues values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
   let options = {
     uri: '/search',
