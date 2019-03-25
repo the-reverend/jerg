@@ -122,8 +122,12 @@ class MetadataCommand extends Command {
     this.log(`writing to database: ${database}`)
 
     fetchStatusCategories(db)
-    .then(() => { return fetchStatuses(db) })
-    .then(() => { return fetchFields(db) })
+    .then(() => {
+      return fetchStatuses(db)
+    })
+    .then(() => {
+      return fetchFields(db)
+    })
   }
 }
 
