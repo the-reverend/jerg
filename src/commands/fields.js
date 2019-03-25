@@ -114,9 +114,9 @@ function fetchStatuses(db) {
   })
 }
 
-class FieldsCommand extends Command {
+class MetadataCommand extends Command {
   async run() {
-    const {flags} = this.parse(FieldsCommand)
+    const {flags} = this.parse(MetadataCommand)
     const database = flags.db || ':memory:'
     const db = sqlite3(database, {})
     this.log(`writing to database: ${database}`)
@@ -127,13 +127,13 @@ class FieldsCommand extends Command {
   }
 }
 
-FieldsCommand.description = `Fetch field data from Jira API
+MetadataCommand.description = `Fetch field data from Jira API
 ...
 Extra documentation goes here
 `
 
-FieldsCommand.flags = {
+MetadataCommand.flags = {
   db: flags.string({char: 'd', description: 'database to fill'}),
 }
 
-module.exports = FieldsCommand
+module.exports = MetadataCommand
