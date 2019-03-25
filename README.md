@@ -29,18 +29,18 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`jerg fields`](#jerg-fields)
+* [`jerg metadata`](#jerg-metadata)
 * [`jerg hello`](#jerg-hello)
 * [`jerg help [COMMAND]`](#jerg-help-command)
 * [`jerg issues`](#jerg-issues)
 
-## `jerg fields`
+## `jerg metadata`
 
 Describe the command here
 
 ```
 USAGE
-  $ jerg fields
+  $ jerg metadata
 
 OPTIONS
   -d, --db=filename  name of sqlite3 db to fill
@@ -50,7 +50,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/fields.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/fields.js)_
+_See code: [src/commands/metadata.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/metadata.js)_
 
 ## `jerg hello`
 
