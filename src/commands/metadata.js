@@ -78,7 +78,7 @@ function fetchStatusCategories(db) {
         colorName: 'green',
         name: 'Done' } ]
   */
-  db.prepare('create table if not exists statusCategories (statusCategory_ numeric, statusCategoryKey text, statusCategoryName text);').run()
+  db.prepare('create table if not exists statusCategories (statusCategory_ integer, statusCategoryKey text, statusCategoryName text);').run()
   db.prepare('create unique index if not exists statusCategories1 on statusCategories (statusCategory_);').run()
   const insert = db.prepare('insert or replace into statusCategories values (?,?,?)')
   return req.get({uri: '/statuscategory'}).then(function (res) {
@@ -104,7 +104,7 @@ function fetchStatuses(db) {
          colorName: 'yellow',
          name: 'In Progress' } },
   */
-  db.prepare('create table if not exists statuses (status_ numeric, statusName text, statusDescription text, statusCategory_ numeric);').run()
+  db.prepare('create table if not exists statuses (status_ integer, statusName text, statusDescription text, statusCategory_ integer);').run()
   db.prepare('create unique index if not exists statuses1 on statuses (status_);').run()
   const insert = db.prepare('insert or replace into statuses values (?,?,?,?)')
   return req.get({uri: '/status'}).then(function (res) {
