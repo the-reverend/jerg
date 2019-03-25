@@ -32,7 +32,7 @@ USAGE
 * [`jerg fields`](#jerg-fields)
 * [`jerg hello`](#jerg-hello)
 * [`jerg help [COMMAND]`](#jerg-help-command)
-* [`jerg tickets`](#jerg-tickets)
+* [`jerg issues`](#jerg-issues)
 
 ## `jerg fields`
 
@@ -43,7 +43,7 @@ USAGE
   $ jerg fields
 
 OPTIONS
-  -n, --name=name  name to print
+  -d, --db=filename  name of sqlite3 db to fill
 
 DESCRIPTION
   ...
@@ -87,21 +87,21 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.1.6/src/commands/help.ts)_
 
-## `jerg tickets`
+## `jerg issues`
 
 Describe the command here
 
 ```
 USAGE
-  $ jerg tickets
+  $ jerg issues
 
 OPTIONS
-  -n, --name=name  name to print
+  -d, --db=filename  name of sqlite3 db to fill
 
 DESCRIPTION
   ...
   Extra documentation goes here
 ```
 
-_See code: [src/commands/tickets.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/tickets.js)_
+_See code: [src/commands/issues.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/issues.js)_
 <!-- commandsstop -->

@@ -21,9 +21,9 @@ const requestDefaults = {
 }
 const req = request.defaults(requestDefaults)
 
-class TicketsCommand extends Command {
+class IssuesCommand extends Command {
   async run() {
-    const {flags} = this.parse(TicketsCommand)
+    const {flags} = this.parse(IssuesCommand)
     const database = flags.db || ':memory:'
     const db = sqlite3(database, {})
     this.log(`writing to database: ${database}`)
@@ -68,13 +68,13 @@ class TicketsCommand extends Command {
   }
 }
 
-TicketsCommand.description = `Describe the command here
+IssuesCommand.description = `Describe the command here
 ...
 Extra documentation goes here
 `
 
-TicketsCommand.flags = {
+IssuesCommand.flags = {
   db: flags.string({char: 'd', description: 'database to fill'}),
 }
 
-module.exports = TicketsCommand
+module.exports = IssuesCommand
