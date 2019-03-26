@@ -50,6 +50,36 @@ const fieldList = [
   // '*all',
 ].join()
 
+function storeStatusLog(db, issues, insert) {
+  issues.forEach(i => {
+    const log = i.changelog.histories.map(h => {
+      // trim down the change log to just state transitions
+      return {
+        id: h.id,
+        created: h.created,
+        status: _.chain(h.items).filter(ii => {
+          return ii.fieldId === 'status'
+        }).first().value(),
+      }
+    }).filter(h => {
+      return _.has(h, 'status') && !_.isUndefined(h.status)
+    })
+
+    log.forEach(h => {
+      insert.run(h.id, h.created, i.id, h.status.to)
+    })
+
+    if (i.changelog.maxResults === i.changelog.total) {
+      if (log.length > 0) {
+        const last = _.last(log)
+        insert.run(last.id, i.fields.created, i.id, last.status.from)
+      }
+    } else {
+      console.log(`need to paginate history on ticket ${i.issueKey}`)
+    }
+  })
+}
+
 function storeIssues(db, issues, insert) {
   issues.forEach(i => {
     insert.run(
@@ -167,10 +197,13 @@ function fetchIssues(db) {
     'issueDevTeam text);'].join(', ')).run()
   db.prepare('create unique index if not exists issues1 on issues (issue_);').run()
   db.prepare('create unique index if not exists issues2 on issues (issueUpdatedStamp);').run()
+  db.prepare('create table if not exists issueStatusLog (issueStatusLog_ integer, issueStatusStamp text, issue_ integer, status_ integer);').run()
+  db.prepare('create unique index if not exists issueStatusLog1 on issueStatusLog (issueStatusLog_, status_);').run()
   const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
-  const lastUpdated = moment(rows.length > 0 ? rows[0].issueLastUpdatedStamp : '1970-01-01T00:00:00.000Z').format('YYYY-MM-DD HH:mm')
+  const lastUpdated = moment(rows.length > 0 ? rows[0].issueLastUpdatedStamp : '2010-01-01T00:00:00.000Z').format('YYYY-MM-DD HH:mm')
   console.log(`lastUpdated : ${lastUpdated}`)
-  const insert = db.prepare('insert or replace into issues values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+  const issueInsert = db.prepare('insert or replace into issues values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+  const logInsert = db.prepare('insert or replace into issueStatusLog values (?,?,?,?)')
   let options = {
     uri: '/search',
     qs: {
@@ -185,7 +218,9 @@ function fetchIssues(db) {
   return req.get(options)
   .then(res => {
     console.log(`issues updated: ${res.issues.length}`)
-    storeIssues(db, res.issues, insert)
+    // console.log(JSON.stringify(res))
+    storeIssues(db, res.issues, issueInsert)
+    storeStatusLog(db, res.issues, logInsert)
     const last = res.total
     const inc = res.maxResults
     const start = res.issues.length
@@ -198,7 +233,8 @@ function fetchIssues(db) {
   .then(all => {
     all.forEach(res => {
       console.log(`issues updated: ${res.issues.length}`)
-      storeIssues(db, res.issues, insert)
+      storeIssues(db, res.issues, issueInsert)
+      storeStatusLog(db, res.issues, logInsert)
     })
   })
 
