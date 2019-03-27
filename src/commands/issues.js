@@ -216,7 +216,7 @@ function fetchIssues(db) {
 
   // get time stamp
   const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
-  const lastUpdated = moment(rows.length > 0 ? rows[0].issueLastUpdatedStamp : '2010-01-01T00:00:00.000Z').format('YYYY-MM-DD HH:mm')
+  const lastUpdated = moment(rows.length > 0 ? rows[0].issueUpdatedStamp : '2010-01-01T00:00:00.000Z').format('YYYY-MM-DD HH:mm')
   console.log(`lastUpdated : ${lastUpdated}`)
 
   // insert statements
