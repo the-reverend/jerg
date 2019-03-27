@@ -50,7 +50,7 @@ const fieldList = [
   // '*all',
 ].join()
 
-function storeStatusLog(db, issues, insert) {
+function storeStatusLog(db, issues, insert, clean) {
   issues.forEach(i => {
     const log = i.changelog.histories.map(h => {
       // trim down the change log to just state transitions
@@ -71,9 +71,11 @@ function storeStatusLog(db, issues, insert) {
 
     if (i.changelog.maxResults === i.changelog.total) {
       if (log.length === 0) {
+        // add a fake entry to indicate initial ticket status in the absence of historical transitions
         insert.run(0, moment(i.fields.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"), i.id, i.fields.status.id)
       } else {
         const last = _.last(log)
+        clean.run(i.id) // since we have historical data, we can discard the fake entry if it exists
         insert.run(last.id, moment(i.fields.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"), i.id, last.status.from)
       }
     } else {
@@ -216,12 +218,21 @@ function fetchIssues(db) {
 
   // get time stamp
   const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
-  const lastUpdated = moment(rows.length > 0 ? rows[0].issueUpdatedStamp : '2010-01-01T00:00:00.000Z').format('YYYY-MM-DD HH:mm')
+  const lastUpdated = moment(rows.length > 0 ? rows[0].issueUpdatedStamp : '2010-01-01T00:00:00.000Z').format('YYYY/MM/DD HH:mm')
   console.log(`lastUpdated : ${lastUpdated}`)
 
   // insert statements
   const issueInsert = db.prepare('insert or replace into issues values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
   const logInsert = db.prepare('insert or replace into issueStatusLog values (?,?,?,?)')
+
+  // delete statements
+  const logClean = db.prepare('delete from issueStatusLog where issueStatusLog_ = 0 and issue_ = ?')
+
+  // NOTE: there is a bug/limitation in JQL - you can only query by date greater than HH:MM so you will always
+  //       get one ticket returned with this JQL query because your last updated ticket will have been modified
+  //       a few seconds after the HH:MM you're querying for, because the seconds get truncated. the only work-
+  //       around is to add a minute to your search JQL, but you risk missing an update, so the lesser evil is
+  //       to just process the single ticket anyway.
   let options = {
     uri: '/search',
     qs: {
@@ -233,12 +244,13 @@ function fetchIssues(db) {
       startAt: 0,
     },
   }
+  console.log(options.qs.jql)
   return req.get(options)
   .then(res => {
     console.log(`issues updated: ${res.issues.length}`)
     // console.log(JSON.stringify(res))
     storeIssues(db, res.issues, issueInsert)
-    storeStatusLog(db, res.issues, logInsert)
+    storeStatusLog(db, res.issues, logInsert, logClean)
     const last = res.total
     const inc = res.maxResults
     const start = res.issues.length
@@ -252,7 +264,7 @@ function fetchIssues(db) {
     all.forEach(res => {
       console.log(`issues updated: ${res.issues.length}`)
       storeIssues(db, res.issues, issueInsert)
-      storeStatusLog(db, res.issues, logInsert)
+      storeStatusLog(db, res.issues, logInsert, logClean)
     })
   })
 
