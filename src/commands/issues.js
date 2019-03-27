@@ -70,7 +70,9 @@ function storeStatusLog(db, issues, insert) {
     })
 
     if (i.changelog.maxResults === i.changelog.total) {
-      if (log.length > 0) {
+      if (log.length === 0) {
+        insert.run(0, moment(i.fields.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"), i.id, i.fields.status.id)
+      } else {
         const last = _.last(log)
         insert.run(last.id, moment(i.fields.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"), i.id, last.status.from)
       }
@@ -186,7 +188,7 @@ function fetchIssues(db) {
   db.prepare('create unique index if not exists issues1 on issues (issue_);').run()
   db.prepare('create index if not exists issues2 on issues (issueUpdatedStamp);').run()
   db.prepare('create table if not exists issueStatusLog (issueStatusLog_ integer, issueStatusStamp text, issue_ integer, status_ integer);').run()
-  db.prepare('create unique index if not exists issueStatusLog1 on issueStatusLog (issueStatusLog_, status_);').run()
+  db.prepare('create unique index if not exists issueStatusLog1 on issueStatusLog (issueStatusLog_, issue_, status_);').run()
 
   // views
   db.prepare(`create view if not exists issueStatus as
@@ -206,6 +208,7 @@ function fetchIssues(db) {
     order by issue_, issueStatusStamp asc`).run()
   db.prepare(`create view if not exists issueStatusTiming as
     select issue_, sc.statusCategory_, statusCategoryKey, sum(b-a) elapsed, (sum(b-a)/86400) || ':' || time(sum(b-a),'unixepoch') as dhms
+    , (b-a)/86400 - (strftime('%w',a,'unixepoch','localtime') + (b-a)/86400) / 7 * 2 elapsedWeekdays
     from issueStatusLog2 log
     natural join statuses s
     natural join statusCategories sc
