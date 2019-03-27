@@ -66,13 +66,13 @@ function storeStatusLog(db, issues, insert) {
     })
 
     log.forEach(h => {
-      insert.run(h.id, h.created, i.id, h.status.to)
+      insert.run(h.id, moment(h.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"), i.id, h.status.to)
     })
 
     if (i.changelog.maxResults === i.changelog.total) {
       if (log.length > 0) {
         const last = _.last(log)
-        insert.run(last.id, i.fields.created, i.id, last.status.from)
+        insert.run(last.id, moment(i.fields.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"), i.id, last.status.from)
       }
     } else {
       console.log(`need to paginate history on ticket ${i.issueKey}`)
@@ -86,11 +86,11 @@ function storeIssues(db, issues, insert) {
       i.id,
       i.key,
       i.fields.summary,
-      i.fields.created, // moment?
-      i.fields.lastViewed, // moment
-      i.fields.resolutiondate ? i.fields.resolutiondate : null,
-      i.fields.updated, // moment
-      i.fields.duedate ? i.fields.duedate : null,
+      moment(i.fields.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"),
+      i.fields.lastViewed ? moment(i.fields.lastViewed).format("YYYY-MM-DDTHH:mm:ss.sssZ") : null,
+      i.fields.resolutiondate ? moment(i.fields.resolutiondate).format("YYYY-MM-DDTHH:mm:ss.sssZ") : null,
+      moment(i.fields.updated).format("YYYY-MM-DDTHH:mm:ss.sssZ"),
+      i.fields.duedate ? moment(i.fields.duedate).format("YYYY-MM-DDTHH:mm:ss.sssZ") : null,
       /*
         "assignee": {
           "self": "https://underarmour.atlassian.net/rest/api/2/user?accountId=557058%3A6d081afa-0704-4787-89d2-453fc28b5ead",
@@ -163,19 +163,7 @@ function storeIssues(db, issues, insert) {
 }
 
 function fetchIssues(db) {
-  /*
-  { expand: 'names,schema',
-    startAt: 0,
-    maxResults: 1,
-    total: 12,
-    issues:
-    [ { expand:
-         'operations,customfield_11800.properties,customfield_12303.properties,versionedRepresentations,editmeta,changelog,renderedFields',
-       id: '387585',
-       self: 'https://underarmour.atlassian.net/rest/api/2/issue/387585',
-       key: 'EO-2058',
-       fields: [Object] } ] }
-  */
+  // tables and indexes
   db.prepare(['create table if not exists issues (issue_ integer',
     'issueKey text',
     'issueSummary text',
@@ -196,12 +184,39 @@ function fetchIssues(db) {
     'issueResolution text',
     'issueDevTeam text);'].join(', ')).run()
   db.prepare('create unique index if not exists issues1 on issues (issue_);').run()
-  db.prepare('create unique index if not exists issues2 on issues (issueUpdatedStamp);').run()
+  db.prepare('create index if not exists issues2 on issues (issueUpdatedStamp);').run()
   db.prepare('create table if not exists issueStatusLog (issueStatusLog_ integer, issueStatusStamp text, issue_ integer, status_ integer);').run()
   db.prepare('create unique index if not exists issueStatusLog1 on issueStatusLog (issueStatusLog_, status_);').run()
+
+  // views
+  db.prepare(`create view if not exists issueStatus as
+    select a.*
+    from issueStatusLog a
+    left outer join issueStatusLog b
+    on a.issue_ = b.issue_ and a.issueStatusStamp < b.issueStatusStamp
+    where b.issue_ is NULL;`).run()
+  db.prepare(`create view if not exists issueStatusLog2 as
+    select *, strftime('%s',issueStatusStamp) as a
+    , ifnull(group_concat(strftime('%s',issueStatusStamp),',') over (
+        partition by issue_
+        order by strftime('%s',issueStatusStamp) asc
+      rows between 1 following and 1 following
+      ), strftime('%s','now')) as b
+    from issueStatusLog
+    order by issue_, issueStatusStamp asc`).run()
+  db.prepare(`create view if not exists issueStatusTiming as
+    select issue_, sc.statusCategory_, statusCategoryKey, sum(b-a) elapsed, (sum(b-a)/86400) || ':' || time(sum(b-a),'unixepoch') as dhms
+    from issueStatusLog2 log
+    natural join statuses s
+    natural join statusCategories sc
+    group by issue_, statusCategory_`).run()
+
+  // get time stamp
   const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
   const lastUpdated = moment(rows.length > 0 ? rows[0].issueLastUpdatedStamp : '2010-01-01T00:00:00.000Z').format('YYYY-MM-DD HH:mm')
   console.log(`lastUpdated : ${lastUpdated}`)
+
+  // insert statements
   const issueInsert = db.prepare('insert or replace into issues values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
   const logInsert = db.prepare('insert or replace into issueStatusLog values (?,?,?,?)')
   let options = {
