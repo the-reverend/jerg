@@ -166,7 +166,7 @@ function storeIssues(db, issues, insert) {
   })
 }
 
-function fetchIssues(db) {
+function fetchIssues(db, projects, dayRange) {
   // tables and indexes
   db.prepare(['create table if not exists issues (issue_ integer',
     'issueKey text',
@@ -238,8 +238,8 @@ function fetchIssues(db) {
     and ii.statusName not in ('Request Canceled')
     and sc.statusCategoryKey in ('done')`).run()
   db.prepare(`create view if not exists opsHistogram as
-    select tdays, count(issue_) as count, round(count(issue_)*100.0 / (select count(1) from histogram), 1) as percent
-    from histogram
+    select tdays, count(issue_) as count, round(count(issue_)*100.0 / (select count(1) from opsMeasure), 1) as percent
+    from opsMeasure
     group by tdays
     order by tdays`).run()
 
@@ -263,7 +263,7 @@ function fetchIssues(db) {
   let options = {
     uri: '/search',
     qs: {
-      jql: `project=EO and updated > -30d and updated > '${lastUpdated}'`,
+      jql: `project in (${projects.join(',')}) and updated > -${dayRange}d and updated > '${lastUpdated}'`,
       fields: fieldList,
       expand: 'changelog',
       // fieldsByKeys: true, // doesn't appear to do anything
@@ -325,9 +325,11 @@ class IssuesCommand extends Command {
     const {flags} = this.parse(IssuesCommand)
     const database = flags.db || ':memory:'
     const db = sqlite3(database, {})
+    const projects = flags.projects.split(',') || (config.has('projects') ? config.get('projects') : ['EO'])
+    const dayRange = parseInt(flags.days) || (config.has('dayRange') ? config.get('dayRange') : 30)
     this.log(`writing to database: ${database}`)
 
-    fetchIssues(db)
+    fetchIssues(db, projects, dayRange)
   }
 }
 
@@ -338,6 +340,8 @@ Extra documentation goes here
 
 IssuesCommand.flags = {
   db: flags.string({char: 'd', description: 'database to fill'}),
+  projects: flags.string({char: 'p', description: 'comma separated projects to query'}),
+  days: flags.string({char: 'z', description: 'days to look back'}),
 }
 
 module.exports = IssuesCommand

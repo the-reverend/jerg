@@ -4,5 +4,7 @@
 		email : 'myEmail',
 		api_token : 'myApiToken',
 		base_url : 'https://underarmour.atlassian.net/rest/api/2'
-	}
+	},
+  projects : ['EO'],
+  dayRange : 35
 }
