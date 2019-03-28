@@ -325,7 +325,7 @@ class IssuesCommand extends Command {
     const {flags} = this.parse(IssuesCommand)
     const database = flags.db || ':memory:'
     const db = sqlite3(database, {})
-    const projects = flags.projects.split(',') || (config.has('projects') ? config.get('projects') : ['EO'])
+    const projects = flags.projects && flags.projects.split(',') || (config.has('projects') ? config.get('projects') : ['EO'])
     const dayRange = parseInt(flags.days, 10) || (config.has('dayRange') ? config.get('dayRange') : 30)
     this.log(`writing to database: ${database}`)
 
