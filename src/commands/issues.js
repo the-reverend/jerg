@@ -66,17 +66,17 @@ function storeStatusLog(db, issues, insert, clean) {
     })
 
     log.forEach(h => {
-      insert.run(h.id, moment(h.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"), i.id, h.status.to)
+      insert.run(h.id, moment(h.created).format('YYYY-MM-DDTHH:mm:ss.sssZ'), i.id, h.status.to)
     })
 
     if (i.changelog.maxResults === i.changelog.total) {
       if (log.length === 0) {
         // add a fake entry to indicate initial ticket status in the absence of historical transitions
-        insert.run(0, moment(i.fields.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"), i.id, i.fields.status.id)
+        insert.run(0, moment(i.fields.created).format('YYYY-MM-DDTHH:mm:ss.sssZ'), i.id, i.fields.status.id)
       } else {
         const last = _.last(log)
         clean.run(i.id) // since we have historical data, we can discard the fake entry if it exists
-        insert.run(last.id, moment(i.fields.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"), i.id, last.status.from)
+        insert.run(last.id, moment(i.fields.created).format('YYYY-MM-DDTHH:mm:ss.sssZ'), i.id, last.status.from)
       }
     } else {
       console.log(`need to paginate history on ticket ${i.issueKey}`)
@@ -90,11 +90,11 @@ function storeIssues(db, issues, insert) {
       i.id,
       i.key,
       i.fields.summary,
-      moment(i.fields.created).format("YYYY-MM-DDTHH:mm:ss.sssZ"),
-      i.fields.lastViewed ? moment(i.fields.lastViewed).format("YYYY-MM-DDTHH:mm:ss.sssZ") : null,
-      i.fields.resolutiondate ? moment(i.fields.resolutiondate).format("YYYY-MM-DDTHH:mm:ss.sssZ") : null,
-      moment(i.fields.updated).format("YYYY-MM-DDTHH:mm:ss.sssZ"),
-      i.fields.duedate ? moment(i.fields.duedate).format("YYYY-MM-DDTHH:mm:ss.sssZ") : null,
+      moment(i.fields.created).format('YYYY-MM-DDTHH:mm:ss.sssZ'),
+      i.fields.lastViewed ? moment(i.fields.lastViewed).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
+      i.fields.resolutiondate ? moment(i.fields.resolutiondate).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
+      moment(i.fields.updated).format('YYYY-MM-DDTHH:mm:ss.sssZ'),
+      i.fields.duedate ? moment(i.fields.duedate).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
       /*
         "assignee": {
           "self": "https://underarmour.atlassian.net/rest/api/2/user?accountId=557058%3A6d081afa-0704-4787-89d2-453fc28b5ead",
@@ -326,7 +326,7 @@ class IssuesCommand extends Command {
     const database = flags.db || ':memory:'
     const db = sqlite3(database, {})
     const projects = flags.projects.split(',') || (config.has('projects') ? config.get('projects') : ['EO'])
-    const dayRange = parseInt(flags.days) || (config.has('dayRange') ? config.get('dayRange') : 30)
+    const dayRange = parseInt(flags.days, 10) || (config.has('dayRange') ? config.get('dayRange') : 30)
     this.log(`writing to database: ${database}`)
 
     fetchIssues(db, projects, dayRange)
