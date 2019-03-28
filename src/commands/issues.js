@@ -209,12 +209,39 @@ function fetchIssues(db) {
     from issueStatusLog
     order by issue_, issueStatusStamp asc`).run()
   db.prepare(`create view if not exists issueStatusTiming as
-    select issue_, sc.statusCategory_, statusCategoryKey, sum(b-a) elapsed, (sum(b-a)/86400) || ':' || time(sum(b-a),'unixepoch') as dhms
-    , (b-a)/86400 - (strftime('%w',a,'unixepoch','localtime') + (b-a)/86400) / 7 * 2 elapsedWeekdays
+    select issue_, sc.statusCategory_
+    , strftime('%s',ifnull(i.issueDueDate,'1970-01-01')) d
+    , statusCategoryKey, sum(b-max(a,strftime('%s',ifnull(i.issueDueDate,'1970-01-01')))) elapsed
+    , (sum(b-max(a,strftime('%s',ifnull(i.issueDueDate,'1970-01-01'))))/86400) || ':' || time(sum(b-max(a,strftime('%s',ifnull(i.issueDueDate,'1970-01-01')))),'unixepoch') as dhms
+    , (b-max(a,strftime('%s',ifnull(i.issueDueDate,'1970-01-01'))))/86400 - (strftime('%w',max(a,strftime('%s',ifnull(i.issueDueDate,'1970-01-01'))),'unixepoch','localtime') + (b-max(a,strftime('%s',ifnull(i.issueDueDate,'1970-01-01'))))/86400) / 7 * 2 elapsedWeekdays
     from issueStatusLog2 log
+    natural join issues i
     natural join statuses s
     natural join statusCategories sc
     group by issue_, statusCategory_`).run()
+  db.prepare(`create view if not exists opsMeasure as
+    select i.issue_, i.issueKey, i.issueResolution
+    , a.elapsed as new, a.dhms as newdhms, cast(a.elapsedWeekdays as integer) as ndays
+    , b.elapsed as fix, b.dhms as fixdhms, cast(b.elapsedWeekdays as integer) as fdays
+    , cast(ifnull(a.elapsedWeekdays,0) + ifnull(b.elapsedWeekdays, 0) as integer) as tdays
+    , date(i.issueDueDate) as dueDate, ii.statusName, sc.statusCategoryKey, i.issueLabels
+    from issues i
+    join statuses ii on ii.status_ = i.issueStatus_
+    join statusCategories sc on ii.statusCategory_ = sc.statusCategory_
+    left join issueStatusTiming a on a.issue_ = i.issue_ and a.statusCategory_ = 2
+    left join issueStatusTiming b on b.issue_ = i.issue_ and b.statusCategory_ = 4
+    where 1=1
+    and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
+    and i.issueLabels not like '%blocked%'
+    and i.issueLabels not like '%awaiting%'
+    and i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired')
+    and ii.statusName not in ('Request Canceled')
+    and sc.statusCategoryKey in ('done')`).run()
+  db.prepare(`create view if not exists opsHistogram as
+    select tdays, count(issue_) as count, round(count(issue_)*100.0 / (select count(1) from histogram), 1) as percent
+    from histogram
+    group by tdays
+    order by tdays`).run()
 
   // get time stamp
   const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
