@@ -245,7 +245,8 @@ function fetchIssues(db, projects, dayRange) {
 
   // get time stamp
   const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
-  const lastUpdated = moment(rows.length > 0 ? rows[0].issueUpdatedStamp : '2010-01-01T00:00:00.000Z').format('YYYY/MM/DD HH:mm')
+  const lastUpdatedMoment = moment(rows.length > 0 ? rows[0].issueUpdatedStamp : '2010-01-01T00:00:00.000Z')
+  const lastUpdated = lastUpdatedMoment.format('YYYY/MM/DD HH:mm')
   console.log(`lastUpdated : ${lastUpdated}`)
 
   // insert statements
@@ -274,14 +275,10 @@ function fetchIssues(db, projects, dayRange) {
   console.log(options.qs.jql)
   return req.get(options)
   .then(res => {
-    console.log(`issues updated: ${res.issues.length}`)
-    // console.log(JSON.stringify(res))
-    storeIssues(db, res.issues, issueInsert)
-    storeStatusLog(db, res.issues, logInsert, logClean)
     const last = res.total
     const inc = res.maxResults
     const start = res.issues.length
-    let a = []
+    let a = [res]
     for (let i = start; i < last; i += inc) {
       a.push(req(_.merge(options, {qs: {startAt: i, maxResults: inc}})))
     }
@@ -289,9 +286,12 @@ function fetchIssues(db, projects, dayRange) {
   })
   .then(all => {
     all.forEach(res => {
-      console.log(`issues updated: ${res.issues.length}`)
-      storeIssues(db, res.issues, issueInsert)
-      storeStatusLog(db, res.issues, logInsert, logClean)
+      const issues = res.issues.filter(i => {
+        return moment(moment(i.fields.updated).format('YYYY-MM-DDTHH:mm:ss')) > moment(lastUpdatedMoment.format('YYYY-MM-DDTHH:mm:ss'))
+      })
+      console.log(`issues updated: ${issues.length}`)
+      storeIssues(db, issues, issueInsert)
+      storeStatusLog(db, issues, logInsert, logClean)
     })
   })
 
