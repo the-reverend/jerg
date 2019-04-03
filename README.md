@@ -29,28 +29,11 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`jerg metadata`](#jerg-metadata)
 * [`jerg hello`](#jerg-hello)
 * [`jerg help [COMMAND]`](#jerg-help-command)
 * [`jerg issues`](#jerg-issues)
-
-## `jerg metadata`
-
-Describe the command here
-
-```
-USAGE
-  $ jerg metadata
-
-OPTIONS
-  -d, --db=filename  name of sqlite3 db to fill
-
-DESCRIPTION
-  ...
-  Extra documentation goes here
-```
-
-_See code: [src/commands/metadata.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/metadata.js)_
+* [`jerg metadata`](#jerg-metadata)
+* [`jerg report`](#jerg-report)
 
 ## `jerg hello`
 
@@ -96,7 +79,9 @@ USAGE
   $ jerg issues
 
 OPTIONS
-  -d, --db=filename  name of sqlite3 db to fill
+  -d, --db=db              database to fill
+  -p, --projects=projects  comma separated projects to query
+  -z, --days=days          days to look back
 
 DESCRIPTION
   ...
@@ -104,4 +89,40 @@ DESCRIPTION
 ```
 
 _See code: [src/commands/issues.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/issues.js)_
+
+## `jerg metadata`
+
+Fetch field data from Jira API
+
+```
+USAGE
+  $ jerg metadata
+
+OPTIONS
+  -d, --db=db  database to fill
+
+DESCRIPTION
+  ...
+  Extra documentation goes here
+```
+
+_See code: [src/commands/metadata.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/metadata.js)_
+
+## `jerg report`
+
+Describe the command here
+
+```
+USAGE
+  $ jerg report
+
+OPTIONS
+  -n, --name=name  name to print
+
+DESCRIPTION
+  ...
+  Extra documentation goes here
+```
+
+_See code: [src/commands/report.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/report.js)_
 <!-- commandsstop -->
