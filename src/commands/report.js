@@ -35,11 +35,18 @@ class ReportCommand extends Command {
     const rows = db.prepare(`select tdays, count(issue_) as count
       from opsMeasure natural join issues i
       where i.issueResolutionStamp between ? and ?
-      group by tdays order by tdays;`).all([
-        a.format('YYYY-MM-DD HH:mm:ss'),
-        b.format('YYYY-MM-DD HH:mm:ss')]
-      )
-    converter.json2csvAsync(rows, {delimiter: {field: '\t'}})
+      group by tdays order by tdays;`)
+    .all([
+      a.format('YYYY-MM-DD HH:mm:ss'),
+      b.format('YYYY-MM-DD HH:mm:ss'),
+    ])
+    const total = rows.reduce((a, v) => {
+      return a + v.count
+    }, 0)
+    converter.json2csvAsync(rows.map(r => {
+      r.percent = Math.round(10000.0 * r.count / total, 2) / 100.0
+      return r
+    }), {delimiter: {field: '\t'}})
     .then(r => {
       this.log(r)
     })
