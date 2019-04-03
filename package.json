@@ -13,6 +13,7 @@
     "@oclif/plugin-help": "^2.1.6",
     "better-sqlite3": "^5.4.0",
     "config": "^3.0.1",
+    "json-2-csv": "^3.5.0",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "request": "^2.88.0",
