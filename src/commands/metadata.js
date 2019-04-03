@@ -117,7 +117,7 @@ function fetchStatuses(db) {
 class MetadataCommand extends Command {
   async run() {
     const {flags} = this.parse(MetadataCommand)
-    const database = flags.db || ':memory:'
+    const database = flags.db || (config.has('database') ? config.get('database') : ':memory:')
     const db = sqlite3(database, {})
     this.log(`writing to database: ${database}`)
 

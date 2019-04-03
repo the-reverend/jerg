@@ -323,10 +323,10 @@ function fetchIssues(db, projects, dayRange) {
 class IssuesCommand extends Command {
   async run() {
     const {flags} = this.parse(IssuesCommand)
-    const database = flags.db || ':memory:'
-    const db = sqlite3(database, {})
+    const database = flags.db || (config.has('database') ? config.get('database') : ':memory:')
     const projects = (flags.projects && flags.projects.split(',')) || (config.has('projects') ? config.get('projects') : ['EO'])
-    const dayRange = parseInt(flags.days, 10) || (config.has('dayRange') ? config.get('dayRange') : 30)
+    const dayRange = parseInt(flags.days, 10) || (config.has('dayRange') ? config.get('dayRange') : 35)
+    const db = sqlite3(database, {})
     this.log(`writing to database: ${database}`)
 
     fetchIssues(db, projects, dayRange)
