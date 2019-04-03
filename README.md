@@ -117,6 +117,8 @@ USAGE
   $ jerg report
 
 OPTIONS
+  -a, --a=a    start date
+  -b, --b=b    end date
   -d, --db=db  database to fill
   -i, --id=id  id of report to generate
 
