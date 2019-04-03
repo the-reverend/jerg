@@ -117,7 +117,8 @@ USAGE
   $ jerg report
 
 OPTIONS
-  -n, --name=name  name to print
+  -d, --db=db  database to fill
+  -i, --id=id  id of report to generate
 
 DESCRIPTION
   ...
