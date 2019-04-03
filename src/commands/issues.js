@@ -289,9 +289,16 @@ function fetchIssues(db, projects, dayRange) {
       const issues = res.issues.filter(i => {
         return moment(moment(i.fields.updated).format('YYYY-MM-DDTHH:mm:ss')) > moment(lastUpdatedMoment.format('YYYY-MM-DDTHH:mm:ss'))
       })
-      console.log(`issues updated: ${issues.length}`)
+      var list = issues.reduce((a, v) => {
+        a.push(v.key)
+        return a
+      }, [])
+      if (list.length > 0) {
+        console.log(`updating : ${list.join(', ')}`)
+      }
       storeIssues(db, issues, issueInsert)
       storeStatusLog(db, issues, logInsert, logClean)
+      console.log(`issues updated: ${issues.length}`)
     })
   })
 
