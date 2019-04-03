@@ -4,18 +4,18 @@ const sqlite3 = require('better-sqlite3')
 const config = require('config')
 const converter = require('json-2-csv')
 
-function report1(db) {
-  const rows = db.prepare(`select tdays, count(issue_) as count
-    from opsMeasure natural join issues i
-    where i.issueResolutionStamp between '2019-03-28' and '2019-04-04'
-    group by tdays order by tdays;`).all()
-  converter.json2csvAsync(rows, {delimiter: {field: '\t'}})
-  .then(r => {
-    console.log(r)
-  })
-}
-
 class ReportCommand extends Command {
+  report1(db) {
+    const rows = db.prepare(`select tdays, count(issue_) as count
+      from opsMeasure natural join issues i
+      where i.issueResolutionStamp between '2019-03-28' and '2019-04-04'
+      group by tdays order by tdays;`).all()
+    converter.json2csvAsync(rows, {delimiter: {field: '\t'}})
+    .then(r => {
+      this.log(r)
+    })
+  }
+
   async run() {
     const {flags} = this.parse(ReportCommand)
     const id = flags.id || 0
@@ -25,7 +25,7 @@ class ReportCommand extends Command {
     switch (id) {
     case 'weekly':
     case '1':
-      report1(db)
+      this.report1(db)
       break
     default:
       this.error(`report id not implemented : ${id}`)
