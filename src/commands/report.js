@@ -43,8 +43,14 @@ class ReportCommand extends Command {
     const total = rows.reduce((a, v) => {
       return a + v.count
     }, 0)
-    converter.json2csvAsync(rows.map(r => {
+    converter.json2csvAsync(rows.map((r, i, a) => {
+      if (i === 0) {
+        r.sum = r.count
+      } else {
+        r.sum = r.count + a[i - 1].sum
+      }
       r.percent = Math.round(10000.0 * r.count / total, 2) / 100.0
+      r.cpercent = Math.round(10000.0 * r.sum / total, 2) / 100.0
       return r
     }), {delimiter: {field: '\t'}})
     .then(r => {
