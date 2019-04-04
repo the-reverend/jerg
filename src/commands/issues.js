@@ -235,14 +235,8 @@ class IssuesCommand extends Command {
       and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
       and i.issueLabels not like '%blocked%'
       and i.issueLabels not like '%awaiting%'
-      and i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired')
-      and ii.statusName not in ('Request Canceled')
-      and sc.statusCategoryKey in ('done')`).run()
-    db.prepare(`create view if not exists opsHistogram as
-      select tdays, count(issue_) as count, round(count(issue_)*100.0 / (select count(1) from opsMeasure), 1) as percent
-      from opsMeasure
-      group by tdays
-      order by tdays`).run()
+      and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
+      and ii.statusName not in ('Request Canceled')`).run()
 
     // get time stamp
     const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()

@@ -35,33 +35,23 @@ class ReportCommand extends Command {
     const stats = {
       inherited: {
         unresolved: db.prepare(`select count(1) val
-          from issues i
-          join statuses ii on ii.status_ = i.issueStatus_
+          from opsMeasure o
+          join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp < ?
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
-          )
-          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
-          and i.issueLabels not like '%blocked%'
-          and i.issueLabels not like '%awaiting%'
-          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
-          and ii.statusName not in ('Request Canceled')`)
+          )`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
         ])[0].val,
 
         resolved: db.prepare(`select count(1) val
-          from issues i
-          join statuses ii on ii.status_ = i.issueStatus_
+          from opsMeasure o
+          join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp < ?
-          and i.issueResolutionStamp between ? and ?
-          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
-          and i.issueLabels not like '%blocked%'
-          and i.issueLabels not like '%awaiting%'
-          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
-          and ii.statusName not in ('Request Canceled')`)
+          and i.issueResolutionStamp between ? and ?`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           a.format('YYYY-MM-DDTHH:mm:ss'),
@@ -70,18 +60,13 @@ class ReportCommand extends Command {
       },
       created: {
         unresolved: db.prepare(`select count(1) val
-          from issues i
-          join statuses ii on ii.status_ = i.issueStatus_
+          from opsMeasure o
+          join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp between ? and ?
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
-          )
-          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
-          and i.issueLabels not like '%blocked%'
-          and i.issueLabels not like '%awaiting%'
-          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
-          and ii.statusName not in ('Request Canceled')`)
+          )`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
@@ -89,15 +74,10 @@ class ReportCommand extends Command {
         ])[0].val,
 
         resolved: db.prepare(`select count(1) val
-          from issues i
-          join statuses ii on ii.status_ = i.issueStatus_
+          from opsMeasure o
+          join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp between ? and ?
-          and i.issueResolutionStamp between ? and ?
-          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
-          and i.issueLabels not like '%blocked%'
-          and i.issueLabels not like '%awaiting%'
-          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
-          and ii.statusName not in ('Request Canceled')`)
+          and i.issueResolutionStamp between ? and ?`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
@@ -107,28 +87,22 @@ class ReportCommand extends Command {
       },
       totals: {
         unresolved: db.prepare(`select count(1) val
-          from issues i
-          join statuses ii on ii.status_ = i.issueStatus_
+          from opsMeasure o
+          join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp < ?
-          and i.issueResolutionStamp is null
-          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
-          and i.issueLabels not like '%blocked%'
-          and i.issueLabels not like '%awaiting%'
-          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
-          and ii.statusName not in ('Request Canceled')`)
+          and (
+            i.issueResolutionStamp > ?
+            or i.issueResolutionStamp is null
+          )`)
         .all([
+          b.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
         ])[0].val,
 
-        resolved: db.prepare(`select count(1) val
-          from issues i
-          join statuses ii on ii.status_ = i.issueStatus_
-          where i.issueResolutionStamp between ? and ?
-          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
-          and i.issueLabels not like '%blocked%'
-          and i.issueLabels not like '%awaiting%'
-          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
-          and ii.statusName not in ('Request Canceled')`)
+        resolved: db.prepare(`select count(o.issue_) val
+          from opsMeasure o
+          join issues i on i.issue_ = o.issue_
+          where i.issueResolutionStamp between ? and ?`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
@@ -139,13 +113,14 @@ class ReportCommand extends Command {
   }
 
   report1(db, a, b) {
-    const rows = db.prepare(`select tdays, count(issue_) as count
-      from opsMeasure natural join issues i
+    const rows = db.prepare(`select tdays, count(o.issue_) as count
+      from opsMeasure o natural join issues i
       where i.issueResolutionStamp between ? and ?
-      group by tdays order by tdays;`)
+      and o.statusCategoryKey in ('done')
+      group by tdays order by tdays`)
     .all([
-      a.format('YYYY-MM-DD HH:mm:ss'),
-      b.format('YYYY-MM-DD HH:mm:ss'),
+      a.format('YYYY-MM-DDTHH:mm:ss'),
+      b.format('YYYY-MM-DDTHH:mm:ss'),
     ])
     const total = rows.reduce((a, v) => {
       return a + v.count
