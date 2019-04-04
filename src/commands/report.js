@@ -36,11 +36,17 @@ class ReportCommand extends Command {
       inherited: {
         unresolved: db.prepare(`select count(1) val
           from issues i
+          join statuses ii on ii.status_ = i.issueStatus_
           where i.issueCreatedStamp < ?
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
-          )`)
+          )
+          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
+          and i.issueLabels not like '%blocked%'
+          and i.issueLabels not like '%awaiting%'
+          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
+          and ii.statusName not in ('Request Canceled')`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
@@ -48,8 +54,14 @@ class ReportCommand extends Command {
 
         resolved: db.prepare(`select count(1) val
           from issues i
+          join statuses ii on ii.status_ = i.issueStatus_
           where i.issueCreatedStamp < ?
-          and i.issueResolutionStamp between ? and ?`)
+          and i.issueResolutionStamp between ? and ?
+          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
+          and i.issueLabels not like '%blocked%'
+          and i.issueLabels not like '%awaiting%'
+          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
+          and ii.statusName not in ('Request Canceled')`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           a.format('YYYY-MM-DDTHH:mm:ss'),
@@ -59,11 +71,17 @@ class ReportCommand extends Command {
       created: {
         unresolved: db.prepare(`select count(1) val
           from issues i
+          join statuses ii on ii.status_ = i.issueStatus_
           where i.issueCreatedStamp between ? and ?
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
-          )`)
+          )
+          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
+          and i.issueLabels not like '%blocked%'
+          and i.issueLabels not like '%awaiting%'
+          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
+          and ii.statusName not in ('Request Canceled')`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
@@ -72,8 +90,14 @@ class ReportCommand extends Command {
 
         resolved: db.prepare(`select count(1) val
           from issues i
+          join statuses ii on ii.status_ = i.issueStatus_
           where i.issueCreatedStamp between ? and ?
-          and i.issueResolutionStamp between ? and ?`)
+          and i.issueResolutionStamp between ? and ?
+          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
+          and i.issueLabels not like '%blocked%'
+          and i.issueLabels not like '%awaiting%'
+          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
+          and ii.statusName not in ('Request Canceled')`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
@@ -84,15 +108,27 @@ class ReportCommand extends Command {
       totals: {
         unresolved: db.prepare(`select count(1) val
           from issues i
+          join statuses ii on ii.status_ = i.issueStatus_
           where i.issueCreatedStamp < ?
-          and i.issueResolutionStamp is null`)
+          and i.issueResolutionStamp is null
+          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
+          and i.issueLabels not like '%blocked%'
+          and i.issueLabels not like '%awaiting%'
+          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
+          and ii.statusName not in ('Request Canceled')`)
         .all([
           b.format('YYYY-MM-DDTHH:mm:ss'),
         ])[0].val,
 
         resolved: db.prepare(`select count(1) val
           from issues i
-          where i.issueResolutionStamp between ? and ?`)
+          join statuses ii on ii.status_ = i.issueStatus_
+          where i.issueResolutionStamp between ? and ?
+          and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
+          and i.issueLabels not like '%blocked%'
+          and i.issueLabels not like '%awaiting%'
+          and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
+          and ii.statusName not in ('Request Canceled')`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
