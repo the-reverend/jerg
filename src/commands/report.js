@@ -11,7 +11,7 @@ class ReportCommand extends Command {
     switch (d) {
     case 'now': return moment()
     case 'today': return moment().startOf('day')
-    case 'eod': return moment().endOf('day')
+    case 'eod': return moment().startOf('day').add(1, 'd')
     }
     const formats = [
       'YYYY-MM-DD',
@@ -151,6 +151,7 @@ class ReportCommand extends Command {
     if (flags.verbose) {
       this.log(`from : ${a.format('YYYY-MM-DD HH:mm:ss')}`)
       this.log(`to   : ${b.format('YYYY-MM-DD HH:mm:ss')}`)
+      this.log(`diff : ${b.diff(a, 'days', true)} days`)
     }
 
     switch (id) {
