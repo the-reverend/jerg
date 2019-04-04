@@ -21,7 +21,7 @@ class ReportCommand extends Command {
     ]
     const i = parseInt(d, 10)
     if (_.isInteger(i) && i.toString() === d) {
-      return moment().startOf('day').add(i, 'd')
+      return moment().startOf('day').add(i + 1, 'd')
     }
     const m = moment(d, formats)
     if (m.isValid()) {
@@ -29,6 +29,77 @@ class ReportCommand extends Command {
     }
     this.error(`argument is not a date: ${d}`)
     return moment('2010-01-01')
+  }
+
+  report2(db, a, b) {
+    const stats = {
+      inherited: {
+        unresolved: db.prepare(`select count(1) val
+          from issues i
+          where i.issueCreatedStamp < ?
+          and (
+            i.issueResolutionStamp > ?
+            or i.issueResolutionStamp is null
+          )`)
+        .all([
+          a.format('YYYY-MM-DDTHH:mm:ss'),
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+        ])[0].val,
+
+        resolved: db.prepare(`select count(1) val
+          from issues i
+          where i.issueCreatedStamp < ?
+          and i.issueResolutionStamp between ? and ?`)
+        .all([
+          a.format('YYYY-MM-DDTHH:mm:ss'),
+          a.format('YYYY-MM-DDTHH:mm:ss'),
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+        ])[0].val,
+      },
+      created: {
+        unresolved: db.prepare(`select count(1) val
+          from issues i
+          where i.issueCreatedStamp between ? and ?
+          and (
+            i.issueResolutionStamp > ?
+            or i.issueResolutionStamp is null
+          )`)
+        .all([
+          a.format('YYYY-MM-DDTHH:mm:ss'),
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+        ])[0].val,
+
+        resolved: db.prepare(`select count(1) val
+          from issues i
+          where i.issueCreatedStamp between ? and ?
+          and i.issueResolutionStamp between ? and ?`)
+        .all([
+          a.format('YYYY-MM-DDTHH:mm:ss'),
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+          a.format('YYYY-MM-DDTHH:mm:ss'),
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+        ])[0].val,
+      },
+      totals: {
+        unresolved: db.prepare(`select count(1) val
+          from issues i
+          where i.issueCreatedStamp < ?
+          and i.issueResolutionStamp is null`)
+        .all([
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+        ])[0].val,
+
+        resolved: db.prepare(`select count(1) val
+          from issues i
+          where i.issueResolutionStamp between ? and ?`)
+        .all([
+          a.format('YYYY-MM-DDTHH:mm:ss'),
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+        ])[0].val,
+      },
+    }
+    this.log(stats)
   }
 
   report1(db, a, b) {
@@ -66,10 +137,19 @@ class ReportCommand extends Command {
     const b = this.parseDateKeywords(flags.b || 'eod')
     const db = sqlite3(database, {})
 
+    if (flags.verbose) {
+      this.log(`from : ${a.format('YYYY-MM-DD HH:mm:ss')}`)
+      this.log(`to   : ${b.format('YYYY-MM-DD HH:mm:ss')}`)
+    }
+
     switch (id) {
-    case 'weekly':
+    case 'sla':
     case '1':
       this.report1(db, a, b)
+      break
+    case 'summary':
+    case '2':
+      this.report2(db, a, b)
       break
     default:
       this.error(`report id not implemented : ${id}`)
@@ -87,6 +167,7 @@ ReportCommand.flags = {
   id: flags.string({char: 'i', description: 'id of report to generate'}),
   a: flags.string({char: 'a', description: 'start date'}),
   b: flags.string({char: 'b', description: 'end date'}),
+  verbose: flags.boolean({char: 'v', description: 'verbose output'}),
 }
 
 module.exports = ReportCommand
