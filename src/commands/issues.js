@@ -240,9 +240,7 @@ class IssuesCommand extends Command {
 
     // get time stamp
     const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
-    const lastUpdatedMoment = moment(rows.length > 0 ? rows[0].issueUpdatedStamp : '2010-01-01T00:00:00.000Z')
-    const lastUpdated = lastUpdatedMoment.format('YYYY/MM/DD HH:mm')
-    this.log(`lastUpdated : ${lastUpdated}`)
+    const lastUpdated = moment(rows.length > 0 ? rows[0].issueUpdatedStamp : '2010-01-01T00:00:00.000Z')
 
     // insert statements
     const issueInsert = db.prepare('insert or replace into issues values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
@@ -253,21 +251,21 @@ class IssuesCommand extends Command {
 
     // NOTE: there is a bug/limitation in JQL - you can only query by date greater than HH:MM so you will always
     //       get one ticket returned with this JQL query because your last updated ticket will have been modified
-    //       a few seconds after the HH:MM you're querying for, because the seconds get truncated. the only work-
-    //       around is to add a minute to your search JQL, but you risk missing an update, so the lesser evil is
-    //       to just process the single ticket anyway.
+    //       a few seconds after the HH:MM you're querying for, because the seconds get truncated. we're going to
+    //       filter the result set later to make up for this limitation.
     let options = {
       uri: '/search',
       qs: {
-        jql: `project in (${projects.join(',')}) and updated > -${dayRange}d and updated > '${lastUpdated}'`,
+        // also query for updated > -Nd so that the first run will get historical data and fill an empty database.
+        // subsequent runs will use the updated date to fetch only new information.
+        jql: `project in (${projects.join(',')}) and updated > -${dayRange}d and updated > '${lastUpdated.format('YYYY/MM/DD HH:mm')}'`,
         fields: fieldList,
         expand: 'changelog',
-        // fieldsByKeys: true, // doesn't appear to do anything
         maxResults: 50,
         startAt: 0,
       },
     }
-    this.log(options.qs.jql)
+    this.log(options.qs.jql) // output the JQL
     return req.get(options)
     .then(res => {
       const last = res.total
@@ -282,7 +280,8 @@ class IssuesCommand extends Command {
     .then(all => {
       all.forEach(res => {
         const issues = res.issues.filter(i => {
-          return moment(moment(i.fields.updated).format('YYYY-MM-DDTHH:mm:ss')) > moment(lastUpdatedMoment.format('YYYY-MM-DDTHH:mm:ss'))
+          // filter out tickets that match the last updated date to make up for jql limitation
+          return moment(moment(i.fields.updated).format('YYYY-MM-DDTHH:mm:ss')) > moment(lastUpdated.format('YYYY-MM-DDTHH:mm:ss'))
         })
         var list = issues.reduce((a, v) => {
           a.push(v.key)
