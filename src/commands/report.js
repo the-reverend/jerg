@@ -31,10 +31,10 @@ class ReportCommand extends Command {
     return moment('2010-01-01')
   }
 
-  report2(db, a, b) {
+  report2(db, a, b, verbose) {
     const stats = {
       inherited: {
-        unresolved: db.prepare(`select count(1) val
+        unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp < ?
@@ -45,9 +45,9 @@ class ReportCommand extends Command {
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
-        ])[0].val,
+        ])[0],
 
-        resolved: db.prepare(`select count(1) val
+        resolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp < ?
@@ -56,10 +56,10 @@ class ReportCommand extends Command {
           a.format('YYYY-MM-DDTHH:mm:ss'),
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
-        ])[0].val,
+        ])[0],
       },
       created: {
-        unresolved: db.prepare(`select count(1) val
+        unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp between ? and ?
@@ -71,9 +71,9 @@ class ReportCommand extends Command {
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
-        ])[0].val,
+        ])[0],
 
-        resolved: db.prepare(`select count(1) val
+        resolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp between ? and ?
@@ -83,10 +83,10 @@ class ReportCommand extends Command {
           b.format('YYYY-MM-DDTHH:mm:ss'),
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
-        ])[0].val,
+        ])[0],
       },
       totals: {
-        unresolved: db.prepare(`select count(1) val
+        unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp < ?
@@ -97,23 +97,31 @@ class ReportCommand extends Command {
         .all([
           b.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
-        ])[0].val,
+        ])[0],
 
-        resolved: db.prepare(`select count(o.issue_) val
+        resolved: db.prepare(`select count(o.issue_) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
           where i.issueResolutionStamp between ? and ?`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
-        ])[0].val,
+        ])[0],
       },
     }
-    this.log(stats)
+    let report = _.transform(stats, (a, v, k) => {
+      a.push({cat: k, unresolved: v.unresolved.count, unresolvedTickets: v.unresolved.tickets, resolved: v.resolved.count})
+    }, [])
+    converter.json2csvAsync(report, {
+      delimiter: {field: '\t'},
+      keys: verbose ? ['cat', 'unresolved', 'unresolvedTickets', 'resolved'] : ['cat', 'unresolved', 'resolved'],
+    }).then(r => {
+      this.log(r)
+    })
   }
 
-  report1(db, a, b) {
-    const rows = db.prepare(`select tdays, count(o.issue_) as count
+  report1(db, a, b, verbose) {
+    const rows = db.prepare(`select tdays, count(o.issue_) as count, group_concat(i.issueKey,', ') tickets
       from opsMeasure o natural join issues i
       where i.issueResolutionStamp between ? and ?
       and o.statusCategoryKey in ('done')
@@ -134,7 +142,9 @@ class ReportCommand extends Command {
       r.percent = Math.round(10000.0 * r.count / total, 2) / 100.0
       r.cpercent = Math.round(10000.0 * r.sum / total, 2) / 100.0
       return r
-    }), {delimiter: {field: '\t'}})
+    }), {
+      delimiter: {field: '\t'},
+      keys: verbose ? ['tdays', 'count', 'sum', 'percent', 'cpercent', 'tickets'] : ['tdays', 'count', 'sum', 'percent', 'cpercent']})
     .then(r => {
       this.log(r)
     })
@@ -157,11 +167,11 @@ class ReportCommand extends Command {
     switch (id) {
     case 'sla':
     case '1':
-      this.report1(db, a, b)
+      this.report1(db, a, b, flags.verbose)
       break
     case 'summary':
     case '2':
-      this.report2(db, a, b)
+      this.report2(db, a, b, flags.verbose)
       break
     default:
       this.error(`report id not implemented : ${id}`)

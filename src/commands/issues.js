@@ -232,9 +232,11 @@ class IssuesCommand extends Command {
       left join issueStatusTiming a on a.issue_ = i.issue_ and a.statusCategory_ = 2
       left join issueStatusTiming b on b.issue_ = i.issue_ and b.statusCategory_ = 4
       where 1=1
+      and i.issueType not in ('Epic')
       and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
       and i.issueLabels not like '%blocked%'
       and i.issueLabels not like '%awaiting%'
+      and i.issueLabels not like '%exclude%'
       and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
       and ii.statusName not in ('Request Canceled')`).run()
 
@@ -265,7 +267,7 @@ class IssuesCommand extends Command {
         startAt: 0,
       },
     }
-    this.log(options.qs.jql) // output the JQL
+    this.log(`jira query: ${options.qs.jql}`)
     return req.get(options)
     .then(res => {
       const last = res.total
