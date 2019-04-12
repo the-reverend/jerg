@@ -109,12 +109,12 @@ class ReportCommand extends Command {
         ])[0],
       },
     }
-    let report = _.transform(stats, (a, v, k) => {
-      a.push({cat: k, unresolved: v.unresolved.count, unresolvedTickets: v.unresolved.tickets, resolved: v.resolved.count})
-    }, [])
+    let report = _.chain(stats).omit('totals').transform((a, v, k) => {
+      a.push({type: k, unresolved: v.unresolved.count, unresolvedTickets: v.unresolved.tickets, resolved: v.resolved.count, resolvedTickets: v.resolved.tickets})
+    }, []).value()
     converter.json2csvAsync(report, {
       delimiter: {field: '\t'},
-      keys: verbose ? ['cat', 'unresolved', 'unresolvedTickets', 'resolved'] : ['cat', 'unresolved', 'resolved'],
+      keys: ['type', 'unresolved', 'unresolvedTickets']
     }).then(r => {
       this.log(r)
     })
