@@ -190,7 +190,7 @@ class ReportCommand extends Command {
       return f === (flags.format || 'txt')
     }).defaultTo('txt').value()
 
-    if (flags.verbose) {
+    if (flags.showRange) {
       this.log(`from : ${a.format('YYYY-MM-DD HH:mm:ss')}`)
       this.log(`to   : ${b.format('YYYY-MM-DD HH:mm:ss')}`)
       this.log(`diff : ${b.diff(a, 'days', true)} days`)
@@ -223,6 +223,7 @@ ReportCommand.flags = {
   b: flags.string({char: 'b', description: 'end date'}),
   format: flags.string({char: 'f', description: 'output formats: [csv, txt, tsv, mdt]'}),
   verbose: flags.boolean({char: 'v', description: 'verbose output'}),
+  showRange: flags.boolean({char: 'r', description: 'show date range'}),
 }
 
 module.exports = ReportCommand
