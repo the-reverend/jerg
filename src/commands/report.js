@@ -176,7 +176,7 @@ class ReportCommand extends Command {
       r.cpercent = Math.round(10000.0 * r.sum / total, 2) / 100.0
       return r
     })
-    this.renderReport(report, format, verbose ? _.keys(report[0]) : ['tdays', 'count', 'sum', 'percent', 'cpercent'])
+    this.renderReport(report, format, verbose ? ['tdays', 'count', 'sum', 'percent', 'cpercent', 'tickets'] : ['tdays', 'count', 'sum', 'percent', 'cpercent'])
   }
 
   async run() {
