@@ -53,7 +53,7 @@ class ReportCommand extends Command {
       })
       break
     case 'mdt':
-      justification = _.values(report[0]).map(el => {
+      justification = _.chain(report[0]).pick(keys).values().value().map(el => {
         // if the column is numeric, assume right justified
         return _.chain(el).toNumber().isNaN().value() ? 'l' : 'r'
       })
