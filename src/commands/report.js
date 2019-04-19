@@ -5,6 +5,7 @@ const config = require('config')
 const csvRenderer = require('json-2-csv')
 const moment = require('moment')
 const tableRenderer = require('console.table')
+const markdownRenderer = require('markdown-table')
 const _ = require('lodash')
 
 class ReportCommand extends Command {
@@ -51,7 +52,9 @@ class ReportCommand extends Command {
       })
       break
     case 'mdt':
-      this.log('mdt not implemented')
+      this.log(markdownRenderer([keys].concat(report.map(r => {
+        return _.chain(r).pick(keys).values(r).value()
+      }))))
       break
     case 'txt': // fall through
     default:
@@ -181,7 +184,6 @@ class ReportCommand extends Command {
     const format = _.chain(['txt', 'mdt', 'csv', 'tsv']).find(f => {
       return f === (flags.format || 'txt')
     }).defaultTo('txt').value()
-    this.log(`format = ${format}`)
 
     if (flags.verbose) {
       this.log(`from : ${a.format('YYYY-MM-DD HH:mm:ss')}`)
