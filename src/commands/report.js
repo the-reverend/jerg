@@ -2,8 +2,9 @@ const {Command, flags} = require('@oclif/command')
 
 const sqlite3 = require('better-sqlite3')
 const config = require('config')
-const converter = require('json-2-csv')
+const csvRenderer = require('json-2-csv')
 const moment = require('moment')
+const tableRenderer = require('console.table')
 const _ = require('lodash')
 
 class ReportCommand extends Command {
@@ -31,7 +32,36 @@ class ReportCommand extends Command {
     return moment('2010-01-01')
   }
 
-  report2(db, a, b, verbose) {
+  renderReport(report, format, keys) {
+    switch (format) {
+    case 'csv':
+      csvRenderer.json2csvAsync(report, {
+        delimiter: {field: ','},
+        keys: keys,
+      }).then(r => {
+        this.log(r)
+      })
+      break
+    case 'tsv':
+      csvRenderer.json2csvAsync(report, {
+        delimiter: {field: '\t'},
+        keys: keys,
+      }).then(r => {
+        this.log(r)
+      })
+      break
+    case 'mdt':
+      this.log('mdt not implemented')
+      break
+    case 'txt': // fall through
+    default:
+      this.log(tableRenderer.getTable(report.map(row => {
+        return _.pick(row, keys)
+      })))
+    }
+  }
+
+  report2(db, a, b, format, verbose) {
     const stats = {
       inherited: {
         unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
@@ -112,15 +142,10 @@ class ReportCommand extends Command {
     let report = _.chain(stats).omit('totals').transform((a, v, k) => {
       a.push({type: k, unresolved: v.unresolved.count, unresolvedTickets: v.unresolved.tickets, resolved: v.resolved.count, resolvedTickets: v.resolved.tickets})
     }, []).value()
-    converter.json2csvAsync(report, {
-      delimiter: {field: '\t'},
-      keys: ['type', 'unresolved', 'unresolvedTickets']
-    }).then(r => {
-      this.log(r)
-    })
+    this.renderReport(report, format, verbose ? _.keys(report[0]) : ['type', 'unresolved', 'unresolvedTickets'])
   }
 
-  report1(db, a, b, verbose) {
+  report1(db, a, b, format, verbose) {
     const rows = db.prepare(`select tdays, count(o.issue_) as count, group_concat(i.issueKey,', ') tickets
       from opsMeasure o natural join issues i
       where i.issueResolutionStamp between ? and ?
@@ -133,7 +158,7 @@ class ReportCommand extends Command {
     const total = rows.reduce((a, v) => {
       return a + v.count
     }, 0)
-    converter.json2csvAsync(rows.map((r, i, a) => {
+    const report = rows.map((r, i, a) => {
       if (i === 0) {
         r.sum = r.count
       } else {
@@ -142,12 +167,8 @@ class ReportCommand extends Command {
       r.percent = Math.round(10000.0 * r.count / total, 2) / 100.0
       r.cpercent = Math.round(10000.0 * r.sum / total, 2) / 100.0
       return r
-    }), {
-      delimiter: {field: '\t'},
-      keys: verbose ? ['tdays', 'count', 'sum', 'percent', 'cpercent', 'tickets'] : ['tdays', 'count', 'sum', 'percent', 'cpercent']})
-    .then(r => {
-      this.log(r)
     })
+    this.renderReport(report, format, verbose ? _.keys(report[0]) : ['tdays', 'count', 'sum', 'percent', 'cpercent'])
   }
 
   async run() {
@@ -157,6 +178,10 @@ class ReportCommand extends Command {
     const a = this.parseDateKeywords(flags.a || '-7')
     const b = this.parseDateKeywords(flags.b || 'eod')
     const db = sqlite3(database, {})
+    const format = _.chain(['txt', 'mdt', 'csv', 'tsv']).find(f => {
+      return f === (flags.format || 'txt')
+    }).defaultTo('txt').value()
+    this.log(`format = ${format}`)
 
     if (flags.verbose) {
       this.log(`from : ${a.format('YYYY-MM-DD HH:mm:ss')}`)
@@ -167,11 +192,11 @@ class ReportCommand extends Command {
     switch (id) {
     case 'sla':
     case '1':
-      this.report1(db, a, b, flags.verbose)
+      this.report1(db, a, b, format, flags.verbose)
       break
     case 'summary':
     case '2':
-      this.report2(db, a, b, flags.verbose)
+      this.report2(db, a, b, format, flags.verbose)
       break
     default:
       this.error(`report id not implemented : ${id}`)
@@ -189,6 +214,7 @@ ReportCommand.flags = {
   id: flags.string({char: 'i', description: 'id of report to generate'}),
   a: flags.string({char: 'a', description: 'start date'}),
   b: flags.string({char: 'b', description: 'end date'}),
+  format: flags.string({char: 'f', description: 'output formats: [csv, txt, tsv, mdt]'}),
   verbose: flags.boolean({char: 'v', description: 'verbose output'}),
 }
 
