@@ -21,8 +21,8 @@ class ReportCommand extends Command {
       'MM/DD/YYYY',
       'MM-DD/YYYY',
     ]
-    const i = parseInt(d, 10)
-    if (_.isInteger(i) && i.toString() === d) {
+    const i = _.toNumber(d)
+    if (_.isInteger(i)) {
       return moment().startOf('day').add(i + 1, 'd')
     }
     const m = moment(d, formats)
@@ -34,6 +34,7 @@ class ReportCommand extends Command {
   }
 
   renderReport(report, format, keys) {
+    var justification = []
     switch (format) {
     case 'csv':
       csvRenderer.json2csvAsync(report, {
@@ -52,9 +53,13 @@ class ReportCommand extends Command {
       })
       break
     case 'mdt':
+      justification = _.values(report[0]).map(el => {
+        // if the column is numeric, assume right justified
+        return _.chain(el).toNumber().isNaN().value() ? 'l' : 'r'
+      })
       this.log(markdownRenderer([keys].concat(report.map(r => {
         return _.chain(r).pick(keys).values(r).value()
-      }))))
+      })), {align: justification}))
       break
     case 'txt': // fall through
     default:
