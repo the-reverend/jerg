@@ -20,7 +20,7 @@ $ npm install -g jerg
 $ jerg COMMAND
 running command...
 $ jerg (-v|--version|version)
-jerg/0.0.0 darwin-x64 node-v11.11.0
+jerg/0.0.0 darwin-x64 node-v11.14.0
 $ jerg --help [COMMAND]
 USAGE
   $ jerg COMMAND
@@ -117,10 +117,13 @@ USAGE
   $ jerg report
 
 OPTIONS
-  -a, --a=a    start date
-  -b, --b=b    end date
-  -d, --db=db  database to fill
-  -i, --id=id  id of report to generate
+  -a, --a=a            start date
+  -b, --b=b            end date
+  -d, --db=db          database to fill
+  -f, --format=format  output formats: [csv, txt, tsv, mdt]
+  -i, --id=id          id of report to generate
+  -r, --showRange      show date range
+  -v, --verbose        verbose output
 
 DESCRIPTION
   ...
