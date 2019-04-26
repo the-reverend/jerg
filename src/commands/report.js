@@ -65,7 +65,7 @@ class ReportCommand extends Command {
     default:
       this.log(tableRenderer.getTable(report.map(row => {
         return _.pick(row, keys)
-      })).replace(/\n+$/,'')) // trim trailing blank lines
+      })).replace(/\n+$/, '')) // trim trailing blank lines
     }
   }
 
@@ -217,7 +217,7 @@ Extra documentation goes here
 `
 
 ReportCommand.flags = {
-  db: flags.string({char: 'd', description: 'database to fill'}),
+  db: flags.string({char: 'd', description: 'database to query'}),
   id: flags.string({char: 'i', description: 'id of report to generate'}),
   a: flags.string({char: 'a', description: 'start date'}),
   b: flags.string({char: 'b', description: 'end date'}),
