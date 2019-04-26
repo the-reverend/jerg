@@ -20,7 +20,7 @@ $ npm install -g jerg
 $ jerg COMMAND
 running command...
 $ jerg (-v|--version|version)
-jerg/0.0.0 darwin-x64 node-v11.14.0
+jerg/0.0.0 linux-x64 node-v10.15.3
 $ jerg --help [COMMAND]
 USAGE
   $ jerg COMMAND
@@ -29,30 +29,11 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`jerg hello`](#jerg-hello)
 * [`jerg help [COMMAND]`](#jerg-help-command)
 * [`jerg issues`](#jerg-issues)
 * [`jerg metadata`](#jerg-metadata)
 * [`jerg remove`](#jerg-remove)
 * [`jerg report`](#jerg-report)
-
-## `jerg hello`
-
-Describe the command here
-
-```
-USAGE
-  $ jerg hello
-
-OPTIONS
-  -n, --name=name  name to print
-
-DESCRIPTION
-  ...
-  Extra documentation goes here
-```
-
-_See code: [src/commands/hello.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/hello.js)_
 
 ## `jerg help [COMMAND]`
 
@@ -73,7 +54,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.1.6
 
 ## `jerg issues`
 
-Describe the command here
+Fetch issues from Jira API
 
 ```
 USAGE
@@ -111,14 +92,15 @@ _See code: [src/commands/metadata.js](https://github.com/the-reverend/jerg/blob/
 
 ## `jerg remove`
 
-Describe the command here
+Remove issues from local db
 
 ```
 USAGE
   $ jerg remove
 
 OPTIONS
-  -n, --name=name  name to print
+  -d, --db=db        database to update
+  -i, --issue=issue  issue to remove from db
 
 DESCRIPTION
   ...
@@ -129,7 +111,7 @@ _See code: [src/commands/remove.js](https://github.com/the-reverend/jerg/blob/v0
 
 ## `jerg report`
 
-Describe the command here
+Generate reports from local db
 
 ```
 USAGE
@@ -138,7 +120,7 @@ USAGE
 OPTIONS
   -a, --a=a            start date
   -b, --b=b            end date
-  -d, --db=db          database to fill
+  -d, --db=db          database to query
   -f, --format=format  output formats: [csv, txt, tsv, mdt]
   -i, --id=id          id of report to generate
   -r, --showRange      show date range

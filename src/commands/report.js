@@ -211,7 +211,7 @@ class ReportCommand extends Command {
   }
 }
 
-ReportCommand.description = `Describe the command here
+ReportCommand.description = `Generate reports from local db
 ...
 Extra documentation goes here
 `

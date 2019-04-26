@@ -335,7 +335,7 @@ class IssuesCommand extends Command {
   }
 }
 
-IssuesCommand.description = `Describe the command here
+IssuesCommand.description = `Fetch issues from Jira API
 ...
 Extra documentation goes here
 `

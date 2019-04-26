@@ -18,7 +18,7 @@ class RemoveCommand extends Command {
   }
 }
 
-RemoveCommand.description = `Describe the command here
+RemoveCommand.description = `Remove issues from local db
 ...
 Extra documentation goes here
 `
