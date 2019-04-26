@@ -33,6 +33,7 @@ USAGE
 * [`jerg help [COMMAND]`](#jerg-help-command)
 * [`jerg issues`](#jerg-issues)
 * [`jerg metadata`](#jerg-metadata)
+* [`jerg remove`](#jerg-remove)
 * [`jerg report`](#jerg-report)
 
 ## `jerg hello`
@@ -107,6 +108,24 @@ DESCRIPTION
 ```
 
 _See code: [src/commands/metadata.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/metadata.js)_
+
+## `jerg remove`
+
+Describe the command here
+
+```
+USAGE
+  $ jerg remove
+
+OPTIONS
+  -n, --name=name  name to print
+
+DESCRIPTION
+  ...
+  Extra documentation goes here
+```
+
+_See code: [src/commands/remove.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/remove.js)_
 
 ## `jerg report`
 
