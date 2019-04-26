@@ -97,7 +97,7 @@ class ReportCommand extends Command {
         ])[0],
       },
       created: {
-        unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
+        unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey || ' (' || o.tdays || ')',', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp between ? and ?
