@@ -18,10 +18,7 @@ class RemoveCommand extends Command {
   }
 }
 
-RemoveCommand.description = `Remove issues from local db
-...
-Extra documentation goes here
-`
+RemoveCommand.description = 'Remove issues from local db'
 
 RemoveCommand.flags = {
   issue: flags.string({char: 'i', description: 'issue to remove from db'}),

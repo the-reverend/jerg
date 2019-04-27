@@ -211,10 +211,7 @@ class ReportCommand extends Command {
   }
 }
 
-ReportCommand.description = `Generate reports from local db
-...
-Extra documentation goes here
-`
+ReportCommand.description = 'Generate reports from local db'
 
 ReportCommand.flags = {
   db: flags.string({char: 'd', description: 'database to query'}),

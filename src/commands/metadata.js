@@ -131,10 +131,7 @@ class MetadataCommand extends Command {
   }
 }
 
-MetadataCommand.description = `Fetch field data from Jira API
-...
-Extra documentation goes here
-`
+MetadataCommand.description = 'Fetch field data from Jira API'
 
 MetadataCommand.flags = {
   db: flags.string({char: 'd', description: 'database to fill'}),

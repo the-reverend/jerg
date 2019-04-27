@@ -335,10 +335,7 @@ class IssuesCommand extends Command {
   }
 }
 
-IssuesCommand.description = `Fetch issues from Jira API
-...
-Extra documentation goes here
-`
+IssuesCommand.description = 'Fetch issues from Jira API'
 
 IssuesCommand.flags = {
   db: flags.string({char: 'd', description: 'database to fill'}),
