@@ -79,6 +79,7 @@ class ReportCommand extends Command {
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
+            or o.statusCategoryKey not in ('done')
           )`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
@@ -89,7 +90,8 @@ class ReportCommand extends Command {
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp < ?
-          and i.issueResolutionStamp between ? and ?`)
+          and i.issueResolutionStamp between ? and ?
+          and o.statusCategoryKey in ('done')`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           a.format('YYYY-MM-DDTHH:mm:ss'),
@@ -104,6 +106,7 @@ class ReportCommand extends Command {
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
+            or o.statusCategoryKey not in ('done')
           )`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
@@ -115,7 +118,8 @@ class ReportCommand extends Command {
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
           where i.issueCreatedStamp between ? and ?
-          and i.issueResolutionStamp between ? and ?`)
+          and i.issueResolutionStamp between ? and ?
+          and o.statusCategoryKey in ('done')`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
@@ -131,6 +135,7 @@ class ReportCommand extends Command {
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
+            or o.statusCategoryKey not in ('done')
           )`)
         .all([
           b.format('YYYY-MM-DDTHH:mm:ss'),
@@ -140,7 +145,8 @@ class ReportCommand extends Command {
         resolved: db.prepare(`select count(o.issue_) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
-          where i.issueResolutionStamp between ? and ?`)
+          where i.issueResolutionStamp between ? and ?
+          and o.statusCategoryKey in ('done')`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
           b.format('YYYY-MM-DDTHH:mm:ss'),
