@@ -20,7 +20,7 @@ $ npm install -g jerg
 $ jerg COMMAND
 running command...
 $ jerg (-v|--version|version)
-jerg/0.0.0 linux-x64 node-v10.15.3
+jerg/0.0.0 darwin-x64 node-v11.14.0
 $ jerg --help [COMMAND]
 USAGE
   $ jerg COMMAND
@@ -30,6 +30,7 @@ USAGE
 # Commands
 <!-- commands -->
 * [`jerg help [COMMAND]`](#jerg-help-command)
+* [`jerg issue`](#jerg-issue)
 * [`jerg issues`](#jerg-issues)
 * [`jerg metadata`](#jerg-metadata)
 * [`jerg remove`](#jerg-remove)
@@ -52,6 +53,24 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.1.6/src/commands/help.ts)_
 
+## `jerg issue`
+
+Describe the command here
+
+```
+USAGE
+  $ jerg issue
+
+OPTIONS
+  -n, --name=name  name to print
+
+DESCRIPTION
+  ...
+  Extra documentation goes here
+```
+
+_See code: [src/commands/issue.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/issue.js)_
+
 ## `jerg issues`
 
 Fetch issues from Jira API
@@ -64,10 +83,6 @@ OPTIONS
   -d, --db=db              database to fill
   -p, --projects=projects  comma separated projects to query
   -z, --days=days          days to look back
-
-DESCRIPTION
-  ...
-  Extra documentation goes here
 ```
 
 _See code: [src/commands/issues.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/issues.js)_
@@ -82,10 +97,6 @@ USAGE
 
 OPTIONS
   -d, --db=db  database to fill
-
-DESCRIPTION
-  ...
-  Extra documentation goes here
 ```
 
 _See code: [src/commands/metadata.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/metadata.js)_
@@ -101,10 +112,6 @@ USAGE
 OPTIONS
   -d, --db=db        database to update
   -i, --issue=issue  issue to remove from db
-
-DESCRIPTION
-  ...
-  Extra documentation goes here
 ```
 
 _See code: [src/commands/remove.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/remove.js)_
@@ -125,10 +132,6 @@ OPTIONS
   -i, --id=id          id of report to generate
   -r, --showRange      show date range
   -v, --verbose        verbose output
-
-DESCRIPTION
-  ...
-  Extra documentation goes here
 ```
 
 _See code: [src/commands/report.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/report.js)_
