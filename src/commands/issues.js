@@ -168,7 +168,7 @@ class IssuesCommand extends Command {
     })
   }
 
-  fetchIssues(db, projects, dayRange) {
+  fetchIssues(db, projects, dayRange, all) {
     // tables and indexes
     db.prepare(['create table if not exists issues (issue_ integer',
       'issueKey text',
@@ -242,7 +242,7 @@ class IssuesCommand extends Command {
       and ii.statusName not in ('Request Canceled')`).run()
 
     // get time stamp
-    const rows = db.prepare('select issueUpdatedStamp from issues order by issueUpdatedStamp desc limit 1').all()
+    const rows = db.prepare(`select issueUpdatedStamp from issues order by issueUpdatedStamp ${all ? 'asc' : 'desc'} limit 1`).all()
     const lastUpdated = moment(rows.length > 0 ? rows[0].issueUpdatedStamp : '2010-01-01T00:00:00.000Z')
 
     // insert statements
@@ -261,7 +261,7 @@ class IssuesCommand extends Command {
       qs: {
         // also query for updated > -Nd so that the first run will get historical data and fill an empty database.
         // subsequent runs will use the updated date to fetch only new information.
-        jql: `project in (${projects.join(',')}) and updated > -${dayRange}d and updated > '${lastUpdated.format('YYYY/MM/DD HH:mm')}'`,
+        jql: `project in (${projects.join(',')})${all ? '' : ` and updated > -${dayRange}d`} and updated > '${lastUpdated.format('YYYY/MM/DD HH:mm')}'`,
         fields: fieldList,
         expand: 'changelog',
         maxResults: 50,
@@ -332,7 +332,7 @@ class IssuesCommand extends Command {
     const db = sqlite3(database, {})
     this.log(`writing to database: ${database}`)
 
-    this.fetchIssues(db, projects, dayRange)
+    this.fetchIssues(db, projects, dayRange, flags.all)
   }
 }
 
@@ -342,6 +342,7 @@ IssuesCommand.flags = {
   db: flags.string({char: 'd', description: 'database to fill'}),
   projects: flags.string({char: 'p', description: 'comma separated projects to query'}),
   days: flags.string({char: 'z', description: 'days to look back'}),
+  all: flags.boolean({char: 'a', default: false, description: 'refresh all issues'}),
 }
 
 module.exports = IssuesCommand

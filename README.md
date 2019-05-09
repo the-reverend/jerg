@@ -55,18 +55,14 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.1.6
 
 ## `jerg issue`
 
-Describe the command here
+Get raw data from jira to help debug an issue import.
 
 ```
 USAGE
   $ jerg issue
 
 OPTIONS
-  -n, --name=name  name to print
-
-DESCRIPTION
-  ...
-  Extra documentation goes here
+  -i, --issue=issue  issue to look up
 ```
 
 _See code: [src/commands/issue.js](https://github.com/the-reverend/jerg/blob/v0.0.0/src/commands/issue.js)_
@@ -80,6 +76,7 @@ USAGE
   $ jerg issues
 
 OPTIONS
+  -a, --all                refresh all issues
   -d, --db=db              database to fill
   -p, --projects=projects  comma separated projects to query
   -z, --days=days          days to look back
