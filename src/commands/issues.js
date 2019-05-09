@@ -93,7 +93,8 @@ class IssuesCommand extends Command {
         i.fields.summary,
         moment(i.fields.created).format('YYYY-MM-DDTHH:mm:ss.sssZ'),
         i.fields.lastViewed ? moment(i.fields.lastViewed).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
-        i.fields.resolutiondate ? moment(i.fields.resolutiondate).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
+        // sometimes tickets have a resolution date even though the resolution is null; patch that here
+        i.fields.resolutiondate && i.fields.resolution ? moment(i.fields.resolutiondate).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
         moment(i.fields.updated).format('YYYY-MM-DDTHH:mm:ss.sssZ'),
         i.fields.duedate ? moment(i.fields.duedate).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
         /*
