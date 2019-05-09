@@ -197,8 +197,8 @@ class ReportCommand extends Command {
     }).defaultTo('txt').value()
 
     if (flags.showRange) {
-      this.log(`from : ${a.format('YYYY-MM-DD HH:mm:ss')}`)
-      this.log(`to   : ${b.format('YYYY-MM-DD HH:mm:ss')}`)
+      this.log(`from : ${a.format('YYYY-MM-DD HH:mm:ss ZZ')}`)
+      this.log(`to   : ${b.format('YYYY-MM-DD HH:mm:ss ZZ')}`)
       this.log(`diff : ${b.diff(a, 'days', true)} days`)
     }
 
