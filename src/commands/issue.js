@@ -1,9 +1,7 @@
 const {Command, flags} = require('@oclif/command')
 
-const moment = require('moment')
 const request = require('request-promise')
 const config = require('config')
-const _ = require('lodash')
 
 const jiraConfig = config.has('jira') ? config.get('jira') : {}
 const requestDefaults = {
