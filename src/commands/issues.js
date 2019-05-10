@@ -225,7 +225,7 @@ class IssuesCommand extends Command {
       select i.issue_, i.issueKey, i.issueResolution
       , a.elapsed as new, a.dhms as newdhms, cast(a.elapsedWeekdays as integer) as ndays
       , b.elapsed as fix, b.dhms as fixdhms, cast(b.elapsedWeekdays as integer) as fdays
-      , cast(ifnull(a.elapsedWeekdays,0) + ifnull(b.elapsedWeekdays, 0) as integer) as tdays
+      , max(0,cast(ifnull(a.elapsedWeekdays,0) + ifnull(b.elapsedWeekdays, 0) as integer)) as tdays
       , date(i.issueDueDate) as dueDate, ii.statusName, sc.statusCategoryKey, i.issueLabels
       from issues i
       join statuses ii on ii.status_ = i.issueStatus_
