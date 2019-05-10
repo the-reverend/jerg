@@ -261,7 +261,7 @@ class IssuesCommand extends Command {
       qs: {
         // also query for updated > -Nd so that the first run will get historical data and fill an empty database.
         // subsequent runs will use the updated date to fetch only new information.
-        jql: `project in (${projects.join(',')})${all ? '' : ` and updated > -${dayRange}d`} and updated > '${lastUpdated.format('YYYY/MM/DD HH:mm')}'`,
+        jql: `project in (${projects.join(',')}) and type not in ('Epic') and updated > '${lastUpdated.format('YYYY/MM/DD HH:mm')}' ${all ? '' : `and updated > -${dayRange}d`}`,
         fields: fieldList,
         expand: 'changelog',
         maxResults: 50,
