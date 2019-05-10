@@ -226,10 +226,10 @@ class IssuesCommand extends Command {
       , a.elapsed as new, a.dhms as newdhms, cast(a.elapsedWeekdays as integer) as ndays
       , b.elapsed as fix, b.dhms as fixdhms, cast(b.elapsedWeekdays as integer) as fdays
       , max(0,cast(ifnull(a.elapsedWeekdays,0) + ifnull(b.elapsedWeekdays, 0) as integer)) as tdays
-      , date(i.issueDueDate) as dueDate, ii.statusName, sc.statusCategoryKey, i.issueLabels
+      , date(i.issueDueDate) as dueDate, s.statusName, sc.statusCategoryKey, i.issueLabels
       from issues i
-      join statuses ii on ii.status_ = i.issueStatus_
-      join statusCategories sc on ii.statusCategory_ = sc.statusCategory_
+      join statuses s on s.status_ = i.issueStatus_
+      join statusCategories sc on s.statusCategory_ = sc.statusCategory_
       left join issueStatusTiming a on a.issue_ = i.issue_ and a.statusCategory_ = 2
       left join issueStatusTiming b on b.issue_ = i.issue_ and b.statusCategory_ = 4
       where 1=1
@@ -239,7 +239,7 @@ class IssuesCommand extends Command {
       and i.issueLabels not like '%awaiting%'
       and i.issueLabels not like '%exclude%'
       and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
-      and ii.statusName not in ('Request Canceled')`).run()
+      and s.statusName not in ('Request Canceled')`).run()
 
     // get time stamp
     const rows = db.prepare(`select issueUpdatedStamp from issues order by issueUpdatedStamp ${all ? 'asc' : 'desc'} limit 1`).all()
@@ -261,7 +261,7 @@ class IssuesCommand extends Command {
       qs: {
         // also query for updated > -Nd so that the first run will get historical data and fill an empty database.
         // subsequent runs will use the updated date to fetch only new information.
-        jql: `project in (${projects.join(',')}) and type not in ('Epic') and updated > '${lastUpdated.format('YYYY/MM/DD HH:mm')}' ${all ? '' : `and updated > -${dayRange}d`}`,
+        jql: `project in (${projects.join(',')}) and updated > '${lastUpdated.format('YYYY/MM/DD HH:mm')}' ${all ? '' : `and updated > -${dayRange}d`}`,
         fields: fieldList,
         expand: 'changelog',
         maxResults: 50,
