@@ -78,6 +78,7 @@ USAGE
 OPTIONS
   -a, --all                refresh all issues
   -d, --db=db              database to fill
+  -j, --jql=jql            raw jql override
   -p, --projects=projects  comma separated projects to query
   -z, --days=days          days to look back
 ```

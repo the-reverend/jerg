@@ -168,7 +168,7 @@ class IssuesCommand extends Command {
     })
   }
 
-  fetchIssues(db, projects, dayRange, all) {
+  fetchIssues(db, projects, dayRange, all, jql) {
     // tables and indexes
     db.prepare(['create table if not exists issues (issue_ integer',
       'issueKey text',
@@ -261,7 +261,7 @@ class IssuesCommand extends Command {
       qs: {
         // also query for updated > -Nd so that the first run will get historical data and fill an empty database.
         // subsequent runs will use the updated date to fetch only new information.
-        jql: `project in (${projects.join(',')}) and updated > '${lastUpdated.format('YYYY/MM/DD HH:mm')}' ${all ? '' : `and updated > -${dayRange}d`}`,
+        jql: jql.length > 0 ? jql : `project in (${projects.join(',')}) and updated > '${lastUpdated.format('YYYY/MM/DD HH:mm')}' ${all ? '' : `and updated > -${dayRange}d`}`,
         fields: fieldList,
         expand: 'changelog',
         maxResults: 50,
@@ -332,7 +332,7 @@ class IssuesCommand extends Command {
     const db = sqlite3(database, {})
     this.log(`writing to database: ${database}`)
 
-    this.fetchIssues(db, projects, dayRange, flags.all)
+    this.fetchIssues(db, projects, dayRange, flags.all, flags.jql)
   }
 }
 
@@ -343,6 +343,7 @@ IssuesCommand.flags = {
   projects: flags.string({char: 'p', description: 'comma separated projects to query'}),
   days: flags.string({char: 'z', description: 'days to look back'}),
   all: flags.boolean({char: 'a', default: false, description: 'refresh all issues'}),
+  jql: flags.string({char: 'j', default: '', description: 'raw jql override'}),
 }
 
 module.exports = IssuesCommand
