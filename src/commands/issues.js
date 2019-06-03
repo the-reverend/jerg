@@ -227,19 +227,21 @@ class IssuesCommand extends Command {
       , b.elapsed as fix, b.dhms as fixdhms, cast(b.elapsedWeekdays as integer) as fdays
       , max(0,cast(ifnull(a.elapsedWeekdays,0) + ifnull(b.elapsedWeekdays, 0) as integer)) as tdays
       , date(i.issueDueDate) as dueDate, s.statusName, sc.statusCategoryKey, i.issueLabels
+      , case when i.issueLabels like '%blocked%' then 'blocked'
+        when i.issueLabels like '%awaiting%' then 'blocked'
+        when i.issueLabels like '%exclude%' then 'ignore'
+        when i.issueResolution in ('Duplicate','Dev Only','No Response','Expired') then 'ignore'
+        when s.statusName in ('Request Canceled') then 'ignore'
+        else 'measure'
+        end as category
       from issues i
       join statuses s on s.status_ = i.issueStatus_
       join statusCategories sc on s.statusCategory_ = sc.statusCategory_
       left join issueStatusTiming a on a.issue_ = i.issue_ and a.statusCategory_ = 2
       left join issueStatusTiming b on b.issue_ = i.issue_ and b.statusCategory_ = 4
       where 1=1
-      and i.issueType not in ('Epic')
       and ifnull(strftime('%s',i.issueDueDate),0) < strftime('%s','now') -- exclude future tasks
-      and i.issueLabels not like '%blocked%'
-      and i.issueLabels not like '%awaiting%'
-      and i.issueLabels not like '%exclude%'
-      and (i.issueResolution not in ('Duplicate','Dev Only','No Response','Expired') or i.issueResolution is null)
-      and s.statusName not in ('Request Canceled')`).run()
+      and i.issueType not in ('Epic')`).run()
 
     // get time stamp
     const rows = db.prepare(`select issueUpdatedStamp from issues order by issueUpdatedStamp ${all ? 'asc' : 'desc'} limit 1`).all()

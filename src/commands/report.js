@@ -75,7 +75,8 @@ class ReportCommand extends Command {
         unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey || ' (' || o.tdays || ')', ', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
-          where i.issueCreatedStamp < ?
+          where o.category in ('measure')
+          and i.issueCreatedStamp < ?
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
@@ -89,7 +90,8 @@ class ReportCommand extends Command {
         resolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
-          where i.issueCreatedStamp < ?
+          where o.category in ('measure')
+          and i.issueCreatedStamp < ?
           and i.issueResolutionStamp between ? and ?
           and o.statusCategoryKey in ('done')`)
         .all([
@@ -102,7 +104,8 @@ class ReportCommand extends Command {
         unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey || ' (' || o.tdays || ')',', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
-          where i.issueCreatedStamp between ? and ?
+          where o.category in ('measure')
+          and i.issueCreatedStamp between ? and ?
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
@@ -117,7 +120,8 @@ class ReportCommand extends Command {
         resolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
-          where i.issueCreatedStamp between ? and ?
+          where o.category in ('measure')
+          and i.issueCreatedStamp between ? and ?
           and i.issueResolutionStamp between ? and ?
           and o.statusCategoryKey in ('done')`)
         .all([
@@ -131,7 +135,8 @@ class ReportCommand extends Command {
         unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
-          where i.issueCreatedStamp < ?
+          where o.category in ('measure')
+          and i.issueCreatedStamp < ?
           and (
             i.issueResolutionStamp > ?
             or i.issueResolutionStamp is null
@@ -145,7 +150,8 @@ class ReportCommand extends Command {
         resolved: db.prepare(`select count(o.issue_) count, group_concat(i.issueKey,', ') tickets
           from opsMeasure o
           join issues i on i.issue_ = o.issue_
-          where i.issueResolutionStamp between ? and ?
+          where o.category in ('measure')
+          and i.issueResolutionStamp between ? and ?
           and o.statusCategoryKey in ('done')`)
         .all([
           a.format('YYYY-MM-DDTHH:mm:ss'),
@@ -162,7 +168,8 @@ class ReportCommand extends Command {
   report1(db, a, b, format, verbose) {
     const rows = db.prepare(`select tdays, count(o.issue_) as count, group_concat(i.issueKey,', ') tickets
       from opsMeasure o natural join issues i
-      where i.issueResolutionStamp between ? and ?
+      where o.category in ('measure')
+      and i.issueResolutionStamp between ? and ?
       and o.statusCategoryKey in ('done')
       group by tdays order by tdays`)
     .all([
@@ -199,7 +206,7 @@ class ReportCommand extends Command {
     if (flags.showRange) {
       this.log(`from : ${a.format('YYYY-MM-DD HH:mm:ss ZZ')}`)
       this.log(`to   : ${b.format('YYYY-MM-DD HH:mm:ss ZZ')}`)
-      this.log(`diff : ${b.diff(a, 'days', true)} days`)
+      this.log(`days : ${b.diff(a, 'days', true)}`)
     }
 
     switch (id) {
