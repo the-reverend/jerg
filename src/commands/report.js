@@ -158,6 +158,31 @@ class ReportCommand extends Command {
           b.format('YYYY-MM-DDTHH:mm:ss'),
         ])[0],
       },
+      blocked: {
+        unresolved: db.prepare(`select count(1) count, group_concat(i.issueKey || ' (' || o.tdays || ')',', ') tickets
+          from opsMeasure o
+          join issues i on i.issue_ = o.issue_
+          where o.category in ('blocked')
+          and (
+            i.issueResolutionStamp > ?
+            or i.issueResolutionStamp is null
+            or o.statusCategoryKey not in ('done')
+          )`)
+        .all([
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+        ])[0],
+
+        resolved: db.prepare(`select count(1) count, group_concat(i.issueKey,', ') tickets
+          from opsMeasure o
+          join issues i on i.issue_ = o.issue_
+          where o.category in ('blocked')
+          and i.issueResolutionStamp between ? and ?
+          and o.statusCategoryKey in ('done')`)
+        .all([
+          a.format('YYYY-MM-DDTHH:mm:ss'),
+          b.format('YYYY-MM-DDTHH:mm:ss'),
+        ])[0],
+      },
     }
     let report = _.chain(stats).omit('totals').transform((a, v, k) => {
       a.push({type: k, unresolved: v.unresolved.count, unresolvedTickets: v.unresolved.tickets, resolved: v.resolved.count, resolvedTickets: v.resolved.tickets})
