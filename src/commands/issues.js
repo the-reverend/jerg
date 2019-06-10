@@ -80,7 +80,7 @@ class IssuesCommand extends Command {
           insert.run(last.id, moment(i.fields.created).format('YYYY-MM-DDTHH:mm:ss.sssZ'), i.id, last.status.from)
         }
       } else {
-        this.log(`need to paginate history on ticket ${i.issueKey}`)
+        this.log(`need to paginate history on ticket ${i.key} (total=${i.changelog.total},max=${i.changelog.maxResults})`)
       }
     })
   }

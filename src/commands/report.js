@@ -61,6 +61,17 @@ class ReportCommand extends Command {
         return _.chain(r).pick(keys).values(r).value()
       })), {align: justification}))
       break
+    case 'mdt2':
+      justification = _.chain(report[0]).pick(keys).values().value().map(el => {
+        // if the column is numeric, assume right justified
+        return _.chain(el).toNumber().isNaN().value() ? 'l' : 'r'
+      })
+      this.log(markdownRenderer([keys].concat(report.map(r => {
+        return _.chain(r).pick(keys).values(r).map(v => {
+          return _.isString(v) ? v.replace(/([A-Z]+-\d+)/g, '[$1](https://underarmour.atlassian.net/browse/$1)') : v
+        }).value()
+      })), {align: justification}))
+      break
     case 'txt': // fall through
     default:
       this.log(tableRenderer.getTable(report.map(row => {
@@ -224,7 +235,7 @@ class ReportCommand extends Command {
     const a = this.parseDateKeywords(flags.a || '-7')
     const b = this.parseDateKeywords(flags.b || 'eod')
     const db = sqlite3(database, {})
-    const format = _.chain(['txt', 'mdt', 'csv', 'tsv']).find(f => {
+    const format = _.chain(['txt', 'mdt', 'csv', 'tsv', 'mdt2']).find(f => {
       return f === (flags.format || 'txt')
     }).defaultTo('txt').value()
 
