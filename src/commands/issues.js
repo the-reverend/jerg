@@ -87,6 +87,14 @@ class IssuesCommand extends Command {
 
   storeIssues(db, issues, insert) {
     issues.forEach(i => {
+      // use labels of the form 'minuxNNN' to subtract days from resolution date. this provides a way to accomodate
+      // delayed ticket closure penalties to the metric.
+      let resolutionAdjustment = Math.max(...i.fields.labels.filter(l => {
+        return l.match(/^minus\d+$/)
+      }).map(l => {
+        return parseInt(l.substr(5))
+      }).concat(0))
+
       insert.run(
         i.id,
         i.key,
@@ -94,7 +102,7 @@ class IssuesCommand extends Command {
         moment(i.fields.created).format('YYYY-MM-DDTHH:mm:ss.sssZ'),
         i.fields.lastViewed ? moment(i.fields.lastViewed).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
         // sometimes tickets have a resolution date even though the resolution is null; patch that here
-        i.fields.resolutiondate && i.fields.resolution ? moment(i.fields.resolutiondate).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
+        i.fields.resolutiondate && i.fields.resolution ? moment(i.fields.resolutiondate).subtract(resolutionAdjustment, 'days').format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
         moment(i.fields.updated).format('YYYY-MM-DDTHH:mm:ss.sssZ'),
         i.fields.duedate ? moment(i.fields.duedate).format('YYYY-MM-DDTHH:mm:ss.sssZ') : null,
         /*
