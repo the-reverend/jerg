@@ -314,7 +314,7 @@ class IssuesCommand extends Command {
     })
     .then(all => {
       all.forEach(res => {
-        const issues = res.issues.filter(i => {
+        const issues = jql.length > 0 ? res.issues : res.issues.filter(i => {
           // filter out tickets that match the last updated date to make up for jql limitation
           return moment(moment(i.fields.updated).format('YYYY-MM-DDTHH:mm:ss')) > moment(lastUpdated.format('YYYY-MM-DDTHH:mm:ss'))
         })
