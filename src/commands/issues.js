@@ -52,7 +52,21 @@ const fieldList = [
 
 class IssuesCommand extends Command {
   storeStatusLog(db, issues, insert, clean) {
+    // we need a status category map to properly adjust for labels of the form 'minusNNN'
+    let statusCategoryMap = db.prepare('select status_, statusCategory_ from statuses natural join statusCategories').all().reduce((a, v) => {
+      a[v.status_] = v.statusCategory_
+      return a
+    }, {})
+
     issues.forEach(i => {
+      // use labels of the form 'minusNNN' to subtract days from resolution date. this provides a way to accomodate
+      // delayed ticket closure penalties to the metric.
+      let resolutionAdjustment = Math.max(...i.fields.labels.filter(l => {
+        return l.match(/^minus\d+$/)
+      }).map(l => {
+        return parseInt(l.substr(5), 10)
+      }).concat(0))
+
       const log = i.changelog.histories.map(h => {
         // trim down the change log to just state transitions
         return {
@@ -67,7 +81,15 @@ class IssuesCommand extends Command {
       })
 
       log.forEach(h => {
-        insert.run(h.id, moment(h.created).format('YYYY-MM-DDTHH:mm:ss.sssZ'), i.id, h.status.to)
+        switch (statusCategoryMap[h.status.to]) {
+        case 3: // done
+          // make the adjustment for labels of the form 'minusNNN'
+          insert.run(h.id, moment(h.created).subtract(resolutionAdjustment, 'days').format('YYYY-MM-DDTHH:mm:ss.sssZ'), i.id, h.status.to)
+          break
+        default:
+          insert.run(h.id, moment(h.created).format('YYYY-MM-DDTHH:mm:ss.sssZ'), i.id, h.status.to)
+          break
+        }
       })
 
       if (i.changelog.maxResults === i.changelog.total) {
@@ -87,12 +109,12 @@ class IssuesCommand extends Command {
 
   storeIssues(db, issues, insert) {
     issues.forEach(i => {
-      // use labels of the form 'minuxNNN' to subtract days from resolution date. this provides a way to accomodate
+      // use labels of the form 'minusNNN' to subtract days from resolution date. this provides a way to accomodate
       // delayed ticket closure penalties to the metric.
       let resolutionAdjustment = Math.max(...i.fields.labels.filter(l => {
         return l.match(/^minus\d+$/)
       }).map(l => {
-        return parseInt(l.substr(5))
+        return parseInt(l.substr(5), 10)
       }).concat(0))
 
       insert.run(
