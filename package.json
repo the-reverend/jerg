@@ -18,7 +18,7 @@
     "lodash": "^4.17.19",
     "markdown-table": "^1.1.2",
     "moment": "^2.24.0",
-    "moment-timezone": "^0.5.25",
+    "moment-timezone": "^0.5.35",
     "request": "^2.88.0",
     "request-promise": "^4.2.4"
   },
